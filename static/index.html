@@ -1453,7 +1453,7 @@
               Sign in to securely save and load your Gemini API Key tied to your email.
             </p>
             <div id="g_id_onload"
-                 data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                 data-client_id="14597319158-vg961519fou8195u1g3qoea9bh40nfkv.apps.googleusercontent.com"
                  data-context="signin"
                  data-ux_mode="popup"
                  data-callback="handleGoogleCredentialResponse"
@@ -1925,58 +1925,64 @@
     </div>
   </div>
 
-  <!-- LICENSE ACTIVATION MODAL (1 Device = 1 License Key Enforcement) -->
+  <!-- GOOGLE SIGN-IN + GEMINI SETUP MODAL -->
   <div id="license-activation-modal" class="fixed inset-0 bg-[#07090e]/95 backdrop-blur-xl flex items-center justify-center p-4 z-50 hidden">
-    <div class="glass-panel p-6 sm:p-8 max-w-md w-full rounded-3xl border border-amber-500/40 shadow-2xl shadow-amber-500/10 flex flex-col gap-5 text-center relative overflow-hidden bg-gradient-to-b from-[#161c2e] to-[#0c101d]">
-      
-      <!-- Top Glow / Accent -->
-      <div class="absolute -top-16 -left-16 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="glass-panel p-6 sm:p-8 max-w-md w-full rounded-3xl border border-indigo-500/40 shadow-2xl shadow-indigo-500/10 flex flex-col gap-5 text-center relative overflow-hidden bg-gradient-to-b from-[#161c2e] to-[#0c101d]">
+
+      <div class="absolute -top-16 -left-16 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute -bottom-16 -right-16 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Icon & Header -->
-      <div class="flex flex-col items-center gap-2">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-amber-500/30 text-2xl text-white">
-          <span>🔑</span>
+      <!-- Step 1: Google Sign-In -->
+      <div id="auth-step-signin">
+        <div class="flex flex-col items-center gap-2 mb-4">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg text-3xl">🎬</div>
+          <h2 class="text-xl font-extrabold text-white tracking-tight">A.W.N Movie Recap Studio</h2>
+          <p class="text-xs text-slate-400">Google အကောင့်နဲ့ ဝင်ရောက်ပြီး စတင်ပါ</p>
         </div>
-        <h2 class="text-xl font-extrabold text-white tracking-tight mt-1">A.W.N Movie Recap Studio</h2>
-        <p class="text-xs text-slate-400">Device License Activation • စက်အသုံးပြုခွင့် လိုင်စင်ကီး ထည့်သွင်းပါ</p>
+
+        <div class="flex flex-col gap-3">
+          <!-- Google One Tap / Button -->
+          <div class="flex justify-center">
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="filled_blue"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-logo_alignment="left"
+                 data-width="300">
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-500">Google Sign-In ဖြင့် ဝင်ရောက်ခြင်းသည် သင့် Gemini API Key ကို စက်များအကြား လုံခြုံစွာ သိမ်းဆည်းပေးပါသည်။</p>
+        </div>
       </div>
 
-      <!-- Device Binding Notice -->
-      <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-left flex flex-col gap-1.5 text-xs">
-        <div class="flex items-center justify-between text-[11px] text-slate-400">
-          <span class="flex items-center gap-1 font-semibold text-slate-300">
-            <span>📱</span> သင့်လက်ရှိ Device ID:
-          </span>
-          <button type="button" onclick="LicenseManager.copyDeviceId()" class="text-amber-400 hover:underline flex items-center gap-1">
-            <span>📋</span> Copy ID
+      <!-- Step 2: API Key Setup (shown after sign-in) -->
+      <div id="auth-step-apikey" class="hidden">
+        <div class="flex flex-col items-center gap-2 mb-4">
+          <div id="auth-user-avatar" class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold text-white">?</div>
+          <p id="auth-user-name" class="text-sm font-bold text-white">Welcome!</p>
+          <p id="auth-user-email" class="text-xs text-slate-400"></p>
+        </div>
+
+        <div class="flex flex-col gap-3 text-left">
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1">🔑 Gemini API Key:</label>
+            <input id="auth-gemini-key-input" type="password" placeholder="AIzaSy..." class="act-input w-full text-sm py-2.5 bg-slate-900/80 text-white placeholder-slate-600 border border-indigo-500/40 focus:border-indigo-400 rounded-xl px-3">
+          </div>
+          <p class="text-[10px] text-slate-500">
+            API Key ရဖို့: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-400 underline">aistudio.google.com/app/apikey</a> မှ ရယူနိုင်သည်။
+          </p>
+          <div id="auth-key-error" class="p-2 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs hidden"></div>
+          <button onclick="AuthManager.saveKeyAndEnter()" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold shadow-lg flex items-center justify-center gap-2 transition">
+            <span>🚀</span> စတင်မည် (Start)
+          </button>
+          <button onclick="AuthManager.skipKeySetup()" class="w-full py-2 rounded-xl bg-slate-800/60 text-slate-400 text-xs hover:text-white transition">
+            ခုချိန်မှာ ကျော်သွားမည် (Enter without API key)
           </button>
         </div>
-        <div class="font-mono text-emerald-400 font-bold tracking-wider awn-device-id-display text-xs break-all">
-          Generating Device ID...
-        </div>
-        <div class="text-[10px] text-amber-300/90 pt-1 border-t border-slate-700/50 flex items-center gap-1">
-          <span>🔒</span> လိုင်စင်ကီးတစ်ခုလျှင် စက်တစ်လုံးတည်း (1 Device Only) သာ ချိတ်ဆက်အသုံးပြုနိုင်ပါသည်။
-        </div>
       </div>
 
-      <!-- Activation Form -->
-      <form onsubmit="LicenseManager.handleActivationSubmit(event)" class="flex flex-col gap-3 text-left">
-        <div>
-          <label class="text-xs font-semibold text-slate-300 block mb-1">လိုင်စင်ကီး ထည့်ပါ (License Key):</label>
-          <input id="activation-key-input" type="text" placeholder="AWN-XXXX-XXXX-XXXX" class="act-input w-full text-center font-mono font-bold tracking-widest text-sm uppercase py-3 border-amber-500/50 bg-slate-900/80 text-white placeholder-slate-600 focus:border-amber-400">
-        </div>
-
-        <div id="activation-error-msg" class="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs hidden leading-relaxed"></div>
-
-        <button id="btn-activate-license" type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white text-xs font-bold shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition transform active:scale-98">
-          <span>🚀</span> Activate Device (အသုံးပြုခွင့် ဖွင့်မည်)
-        </button>
-      </form>
-
-      <div class="text-[11px] text-slate-400">
-        လိုင်စင်ကီး ရယူလိုပါက Admin ထံ ဆက်သွယ်ပါ (Master VIP Key: <span class="font-mono text-amber-300 font-bold">AWN-VIP-PRO-2026</span>)
-      </div>
     </div>
   </div>
 
@@ -2013,6 +2019,7 @@
 
   <!-- SCRIPTS -->
   <script src="/static/js/api.js?v=3.5.0"></script>
+  <script src="/static/js/auth.js?v=3.5.0"></script>
   <script src="/static/js/license.js?v=3.5.0"></script>
   <script src="/static/js/script_assistant.js?v=3.5.0"></script>
   <script src="/static/js/recap_studio.js?v=3.5.0"></script>
