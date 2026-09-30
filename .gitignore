@@ -1,0 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Temporary media uploads and generated outputs
+uploads/*
+!uploads/.gitkeep
+output/*
+!output/.gitkeep
+
+# Logs and environment
+*.log
+.env
+cloudflared.exe
+
+# OS generated files
+Thumbs.db
+.DS_Store

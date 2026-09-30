@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: awn-movie-recap-studio
+    env: docker
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8000

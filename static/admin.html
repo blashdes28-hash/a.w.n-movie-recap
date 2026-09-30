@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="my" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A.W.N Studio - Secret License Control</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#07090e] text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- TOP HEADER -->
+  <header class="h-16 border-b border-slate-800 bg-[#0d111a]/95 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30 shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-white font-extrabold text-xs">
+        AWN
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>A.W.N Secret License Control</span>
+          <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">ADMIN BACKEND</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">1 License = 1 Device & 1-Time Use Management</p>
+      </div>
+    </div>
+
+    <div id="admin-header-actions" class="hidden flex items-center gap-3">
+      <a href="/" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition">
+        <span>🎬</span> Open Main Studio
+      </a>
+      <button onclick="AdminApp.openChangePassModal()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+        <span>🔒</span> Change Password
+      </button>
+      <button onclick="AdminApp.logout()" class="px-3 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold hover:bg-rose-500/30 transition">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="admin-login-overlay" class="fixed inset-0 bg-[#07090e]/95 backdrop-blur-xl flex items-center justify-center p-4 z-50">
+    <div class="glass-panel p-6 sm:p-8 max-w-sm w-full rounded-3xl border border-amber-500/40 shadow-2xl flex flex-col gap-4 text-center bg-gradient-to-b from-[#141a29] to-[#0a0d16]">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-amber-500/30 text-2xl mx-auto text-white">
+        🔒
+      </div>
+      <div>
+        <h2 class="text-lg font-bold text-white">Admin Security Access</h2>
+        <p class="text-xs text-slate-400 mt-1">လိုင်စင်စီမံခန့်ခွဲရေး အတွက် Admin စကားဝှက် ထည့်ပါ</p>
+      </div>
+
+      <form onsubmit="AdminApp.handleLogin(event)" class="flex flex-col gap-3 text-left">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-300 block mb-1">Admin Password:</label>
+          <input id="admin-password-input" type="password" placeholder="Enter admin password..." class="act-input w-full text-center text-sm py-2.5 bg-slate-900 border-amber-500/50 text-white focus:border-amber-400">
+        </div>
+        <div id="admin-login-error" class="hidden p-2 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs text-center"></div>
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white text-xs font-bold shadow-lg shadow-amber-500/25 transition">
+          Unlock License Manager
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main id="admin-main-content" class="hidden flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="glass-panel p-4 rounded-2xl border-slate-700/80 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-xl text-blue-400">
+          🔑
+        </div>
+        <div>
+          <span class="text-xs text-slate-400">Total License Keys</span>
+          <h3 id="stat-total-keys" class="text-xl font-extrabold text-white">0</h3>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl border-slate-700/80 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-xl text-emerald-400">
+          📱
+        </div>
+        <div>
+          <span class="text-xs text-slate-400">Active Bound Devices</span>
+          <h3 id="stat-active-devices" class="text-xl font-extrabold text-emerald-400">0</h3>
+        </div>
+      </div>
+
+      <div class="glass-panel p-4 rounded-2xl border-slate-700/80 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl text-amber-400">
+          ✨
+        </div>
+        <div>
+          <span class="text-xs text-slate-400">Unused Keys (Ready to Sell)</span>
+          <h3 id="stat-unused-keys" class="text-xl font-extrabold text-amber-400">0</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEY GENERATOR CARD -->
+    <div class="glass-panel p-5 rounded-2xl border-amber-500/30 bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-900 shadow-xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+          <span>⚡</span> Generate New License Keys (1 Device & 1-Time Use)
+        </h3>
+        <span class="text-[11px] text-slate-400">Key format: AWN-XXXX-XXXX-XXXX</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Plan အမျိုးအစား:</label>
+          <select id="gen-plan-select" class="act-select w-full text-xs" onchange="AdminApp.onPlanSelectChange(this.value)">
+            <option value="Trial 1 Day VIP">Trial 1 Day VIP (၁ ရက် / ၂၄ နာရီ စမ်းသပ်ခွင့်)</option>
+            <option value="Pro 1 Month">Pro 1 Month (၁ လ)</option>
+            <option value="Pro 3 Months">Pro 3 Months (၃ လ)</option>
+            <option value="Pro 6 Months">Pro 6 Months (၆ လ)</option>
+            <option value="Pro 1 Year">Pro 1 Year (၁ နှစ်)</option>
+            <option value="Lifetime VIP" selected>Lifetime VIP (အမြဲတမ်း)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">သက်တမ်း (Duration):</label>
+          <select id="gen-duration-select" class="act-select w-full text-xs">
+            <option value="1">1 Day (၂၄ နာရီ / ၁ ရက်)</option>
+            <option value="30">30 Days (၁ လ)</option>
+            <option value="90">90 Days (၃ လ)</option>
+            <option value="180">180 Days (၆ လ)</option>
+            <option value="365">365 Days (၁ နှစ်)</option>
+            <option value="lifetime" selected>Lifetime (သက်တမ်း အကန့်အသတ်မရှိ)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">အရေအတွက် (Quantity):</label>
+          <input id="gen-count-input" type="number" min="1" max="50" value="1" class="act-input w-full text-xs">
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Customer / Client Note:</label>
+          <input id="gen-notes-input" type="text" placeholder="e.g. Aung Win (VIP)" class="act-input w-full text-xs">
+        </div>
+      </div>
+
+      <button id="btn-generate-keys" onclick="AdminApp.generateKeys()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white text-xs font-bold shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition">
+        <span>⚡</span> Generate License Keys
+      </button>
+
+      <!-- Results Box -->
+      <div id="gen-results-box" class="hidden p-3.5 rounded-xl bg-slate-900 border border-amber-500/50 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-amber-400 font-bold">🎉 ထုတ်လုပ်ပြီးသော လိုင်စင်ကီး (Copy ကူးပြီး ဖောက်သည်ထံ ပို့နိုင်ပါသည်):</span>
+          <button onclick="AdminApp.copyText(document.getElementById('gen-results-textarea').value)" class="text-slate-300 hover:text-white flex items-center gap-1 font-semibold text-[11px]">
+            <span>📋</span> Copy All
+          </button>
+        </div>
+        <textarea id="gen-results-textarea" rows="3" readonly class="act-input w-full text-xs font-mono font-bold text-amber-300 bg-black/40"></textarea>
+      </div>
+    </div>
+
+    <!-- LICENSES REGISTRY TABLE -->
+    <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl flex flex-col">
+      <div class="p-4 bg-slate-900/60 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">License Registry & Device Locks</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Key တစ်ခုလျှင် စက်တစ်လုံးတည်းသာ ခွင့်ပြုထားပြီး တစ်ကြိမ်အသုံးပြုပြီးပါက အခြားစက်တွင် သုံး၍မရပါ</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="search-license-input" oninput="AdminApp.filterTable()" type="text" placeholder="Search key or note..." class="act-input text-xs py-1.5 px-3 w-48">
+          <button onclick="AdminApp.loadLicenses()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1 transition">
+            <span>🔄</span> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 text-[11px] font-semibold text-slate-400 bg-slate-800/30">
+              <th class="p-3">License Key</th>
+              <th class="p-3">Plan</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Bound Device ID</th>
+              <th class="p-3">Customer Note</th>
+              <th class="p-3">Expires</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <tr><td colspan="7" class="p-4 text-center text-slate-400 text-xs">Loading licenses...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div id="change-pass-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-panel p-6 max-w-sm w-full rounded-2xl border border-slate-700 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white">Change Admin Password</h3>
+        <button onclick="document.getElementById('change-pass-modal').classList.add('hidden')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <form onsubmit="AdminApp.handleChangePassword(event)" class="flex flex-col gap-3 text-xs">
+        <div>
+          <label class="text-slate-300 block mb-1">Old Password:</label>
+          <input id="old-pass-input" type="password" class="act-input w-full">
+        </div>
+        <div>
+          <label class="text-slate-300 block mb-1">New Password:</label>
+          <input id="new-pass-input" type="password" class="act-input w-full">
+        </div>
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-bold transition">
+          Save New Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const AdminApp = {
+      token: sessionStorage.getItem('awn_admin_token') || '',
+      allLicenses: [],
+
+      init() {
+        if (this.token) {
+          this.showDashboard();
+        } else {
+          document.getElementById('admin-login-overlay').classList.remove('hidden');
+        }
+      },
+
+      async handleLogin(e) {
+        e.preventDefault();
+        const pass = document.getElementById('admin-password-input').value.trim();
+        const errBox = document.getElementById('admin-login-error');
+        errBox.classList.add('hidden');
+
+        if (!pass) return;
+
+        try {
+          const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'Incorrect password');
+          }
+          this.token = pass;
+          sessionStorage.setItem('awn_admin_token', pass);
+          this.showDashboard();
+        } catch (err) {
+          errBox.textContent = `❌ ${err.message}`;
+          errBox.classList.remove('hidden');
+        }
+      },
+
+      showDashboard() {
+        document.getElementById('admin-login-overlay').classList.add('hidden');
+        document.getElementById('admin-main-content').classList.remove('hidden');
+        document.getElementById('admin-header-actions').classList.remove('hidden');
+        this.loadLicenses();
+      },
+
+      logout() {
+        sessionStorage.removeItem('awn_admin_token');
+        location.reload();
+      },
+
+      async loadLicenses() {
+        const tbody = document.getElementById('admin-table-body');
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 text-xs">Loading licenses...</td></tr>`;
+
+        try {
+          const res = await fetch('/api/license/list', {
+            headers: { 'X-Admin-Password': this.token }
+          });
+          if (res.status === 401) {
+            this.logout();
+            return;
+          }
+          const data = await res.json();
+          this.allLicenses = data.licenses || [];
+          this.updateStats();
+          this.renderTable(this.allLicenses);
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-400 text-xs">Error: ${e.message}</td></tr>`;
+        }
+      },
+
+      updateStats() {
+        let active = 0;
+        let unused = 0;
+        this.allLicenses.forEach(l => {
+          if (l.bound_device_id) active++;
+          else if (l.status === 'unused') unused++;
+        });
+        document.getElementById('stat-total-keys').textContent = this.allLicenses.length;
+        document.getElementById('stat-active-devices').textContent = active;
+        document.getElementById('stat-unused-keys').textContent = unused;
+      },
+
+      renderTable(list) {
+        const tbody = document.getElementById('admin-table-body');
+        if (!list || list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 text-xs">လိုင်စင်ကီး မရှိသေးပါ။ အထက်မှ အသစ် ထုတ်ယူပါ (Generate Keys)။</td></tr>`;
+          return;
+        }
+
+        let rows = '';
+        list.forEach(lic => {
+          let statusBadge = '';
+          if (lic.bound_device_id) {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Active (Locked to 1 Device)</span>`;
+          } else if (lic.status === 'unused') {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/40">Unused (Ready to Sell)</span>`;
+          } else if (lic.status === 'revoked') {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40">Revoked</span>`;
+          } else {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40">${lic.status}</span>`;
+          }
+
+          const boundDevice = lic.bound_device_id 
+            ? `<div class="font-mono text-emerald-400 text-xs font-bold">${lic.bound_device_id}</div><div class="text-[10px] text-slate-400">${lic.bound_device_info || ''}</div>`
+            : `<span class="text-slate-500 text-xs font-mono">— Unused —</span>`;
+
+          const exp = lic.expires_at ? new Date(lic.expires_at).toLocaleDateString() : '<span class="text-indigo-300">Lifetime VIP</span>';
+
+          rows += `
+            <tr class="border-b border-slate-800/60 hover:bg-slate-800/30 transition text-xs">
+              <td class="p-3 font-mono font-bold text-white flex items-center gap-1.5">
+                <span>${lic.key}</span>
+                <button onclick="AdminApp.copyCustomerMsg('${lic.key}', '${lic.plan}')" class="text-amber-400 hover:text-amber-300 text-xs" title="Copy Customer Delivery Message">📋</button>
+              </td>
+              <td class="p-3 text-slate-300">${lic.plan}</td>
+              <td class="p-3">${statusBadge}</td>
+              <td class="p-3">${boundDevice}</td>
+              <td class="p-3 text-slate-300 text-[11px]">${lic.notes || '—'}</td>
+              <td class="p-3 text-slate-400 text-[11px]">${exp}</td>
+              <td class="p-3 text-right whitespace-nowrap">
+                <div class="flex items-center justify-end gap-1.5">
+                  ${lic.bound_device_id ? `
+                    <button onclick="AdminApp.resetDevice('${lic.key}')" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] hover:bg-amber-500/30 transition" title="စက်အသစ်သို့ လွှဲပြောင်းခွင့်ပြုရန် Reset လုပ်မည်">
+                      🔄 Reset Device
+                    </button>
+                  ` : ''}
+                  <button onclick="AdminApp.deleteKey('${lic.key}')" class="px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] hover:bg-rose-500/30 transition" title="Delete">
+                    ✕
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows;
+      },
+
+      onPlanSelectChange(planVal) {
+        const dur = document.getElementById('gen-duration-select');
+        if (!dur) return;
+        if (planVal.includes('1 Day')) dur.value = '1';
+        else if (planVal.includes('1 Month')) dur.value = '30';
+        else if (planVal.includes('3 Months')) dur.value = '90';
+        else if (planVal.includes('6 Months')) dur.value = '180';
+        else if (planVal.includes('1 Year')) dur.value = '365';
+        else if (planVal.includes('Lifetime')) dur.value = 'lifetime';
+      },
+
+      filterTable() {
+        const query = document.getElementById('search-license-input').value.toLowerCase().trim();
+        if (!query) {
+          this.renderTable(this.allLicenses);
+          return;
+        }
+        const filtered = this.allLicenses.filter(l => 
+          l.key.toLowerCase().includes(query) || 
+          (l.notes && l.notes.toLowerCase().includes(query)) ||
+          (l.bound_device_id && l.bound_device_id.toLowerCase().includes(query))
+        );
+        this.renderTable(filtered);
+      },
+
+      async generateKeys() {
+        const plan = document.getElementById('gen-plan-select').value;
+        const count = parseInt(document.getElementById('gen-count-input').value, 10) || 1;
+        const durationDays = document.getElementById('gen-duration-select').value;
+        const notes = document.getElementById('gen-notes-input').value.trim();
+        const btn = document.getElementById('btn-generate-keys');
+        const resultBox = document.getElementById('gen-results-box');
+
+        btn.disabled = true;
+        try {
+          const res = await fetch('/api/license/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Password': this.token
+            },
+            body: JSON.stringify({
+              plan: plan,
+              count: count,
+              expires_days: durationDays === 'lifetime' ? null : parseInt(durationDays, 10),
+              notes: notes
+            })
+          });
+          const data = await res.json();
+          if (data && data.created) {
+            resultBox.classList.remove('hidden');
+            const formatted = data.created.map(k => `✨ A.W.N Movie Recap Studio VIP Key:\n🔑 License Key: ${k.key}\n📦 Plan: ${k.plan}\n🔒 Rule: 1 Device Only (စက်တစ်လုံးတည်းသာ သီးသန့် အသုံးပြုနိုင်ပါသည်)\n🌐 Login Web: http://127.0.0.1:8000`).join('\n\n---\n\n');
+            document.getElementById('gen-results-textarea').value = formatted;
+            this.loadLicenses();
+          }
+        } catch (e) {
+          alert('Error: ' + e.message);
+        } finally {
+          btn.disabled = false;
+        }
+      },
+
+      async resetDevice(key) {
+        if (!confirm(`Reset device binding for ${key}?\nဤလိုင်စင်ကီးမှ စက်ချိတ်ဆက်မှုကို ဖြုတ်ပါက အခြားစက်အသစ်တွင် ပြန်လည် ထည့်သွင်းနိုင်ပါမည်။`)) return;
+        try {
+          await fetch('/api/license/reset-device', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Password': this.token
+            },
+            body: JSON.stringify({ license_key: key })
+          });
+          this.loadLicenses();
+        } catch (e) {
+          alert('Error: ' + e.message);
+        }
+      },
+
+      async deleteKey(key) {
+        if (!confirm(`Delete license key ${key} permanently?`)) return;
+        try {
+          await fetch('/api/license/delete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Password': this.token
+            },
+            body: JSON.stringify({ license_key: key })
+          });
+          this.loadLicenses();
+        } catch (e) {
+          alert('Error: ' + e.message);
+        }
+      },
+
+      copyText(text) {
+        navigator.clipboard.writeText(text);
+        alert('📋 Copied to clipboard!');
+      },
+
+      copyCustomerMsg(key, plan) {
+        const msg = `✨ A.W.N Movie Recap Studio Access Key:\n🔑 License Key: ${key}\n📦 Plan: ${plan}\n🔒 Note: 1 License = 1 Device Only\n🌐 Access Web: http://127.0.0.1:8000`;
+        navigator.clipboard.writeText(msg);
+        alert(`📋 Customer Delivery Message copied for ${key}!`);
+      },
+
+      openChangePassModal() {
+        document.getElementById('change-pass-modal').classList.remove('hidden');
+      },
+
+      async handleChangePassword(e) {
+        e.preventDefault();
+        const oldP = document.getElementById('old-pass-input').value;
+        const newP = document.getElementById('new-pass-input').value;
+        try {
+          const res = await fetch('/api/admin/change-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Password': this.token
+            },
+            body: JSON.stringify({ old_password: oldP, new_password: newP })
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'Password change failed');
+          }
+          this.token = newP;
+          sessionStorage.setItem('awn_admin_token', newP);
+          document.getElementById('change-pass-modal').classList.add('hidden');
+          alert('✅ Admin Password changed successfully!');
+        } catch (err) {
+          alert('❌ ' + err.message);
+        }
+      }
+    };
+
+    window.AdminApp = AdminApp;
+    window.addEventListener('DOMContentLoaded', () => AdminApp.init());
+  </script>
+</body>
+</html>

@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="my" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A.W.N Movie Recap Studio</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#07090e',
+              sidebar: '#0d111a',
+              card: '#121826',
+              accent: '#3b82f6',
+              purple: '#8b5cf6',
+              orange: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#07090e] text-slate-100 flex flex-col h-screen overflow-hidden antialiased select-none">
+
+  <!-- TOP HEADER BAR (Matching Screenshots 1, 2, 3, 4) -->
+  <header class="h-14 border-b border-slate-800/80 bg-[#0d111a]/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 mr-2">
+      <!-- Mobile Hamburger Menu Button -->
+      <button id="btn-toggle-sidebar" type="button" onclick="App.toggleSidebar()" class="p-2 -ml-1 text-slate-300 hover:text-white rounded-xl hover:bg-slate-800/80 transition md:hidden focus:outline-none" title="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+
+      <!-- Mobile App Brand Badge -->
+      <div class="flex items-center gap-2 md:hidden">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center font-extrabold text-[10px] text-white shadow">AWN</div>
+        <span class="text-xs font-bold text-white tracking-tight truncate">AWN Studio</span>
+      </div>
+
+      <!-- Search Bar (Responsive: auto-fits screen) -->
+      <div class="relative items-center w-full max-w-xs md:max-w-sm hidden sm:flex">
+        <svg class="w-4 h-4 absolute left-3 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <input id="top-search-input" type="text" placeholder="film movie fyp..." class="w-full bg-[#111726] border border-slate-700/60 rounded-full pl-9 pr-16 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+        <button id="btn-top-search" class="absolute right-1 px-2.5 py-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded-full text-[11px] font-medium border border-blue-500/30 transition">
+          Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Header Status & Actions -->
+    <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+      <div class="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-xs text-slate-400">
+        <span id="sys-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="sys-status-text">A.W.N Ultra HD Studio Active</span>
+      </div>
+
+      <button onclick="App.switchTab('transcribe')" class="px-2.5 sm:px-3.5 py-1.5 rounded-lg btn-gradient-recap text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap shadow-md">
+        <span>✨</span> <span class="hidden sm:inline">Subtitle Studio</span><span class="sm:hidden">Studio</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER: SIDEBAR + CONTENT -->
+  <div class="flex flex-1 overflow-hidden relative">
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebar-backdrop" onclick="App.toggleSidebar(false)" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-40 hidden transition-opacity md:hidden"></div>
+
+    <!-- LEFT SIDEBAR (Matching Screenshot 4 & Mobile Off-canvas Drawer) -->
+    <aside id="main-sidebar" class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-64 bg-[#0d111a] border-r border-slate-800/80 flex flex-col justify-between p-3.5 shrink-0 overflow-y-auto shadow-2xl md:shadow-none">
+      <div class="flex flex-col gap-5">
+        <!-- Logo / App Title & Mobile Close Button -->
+        <div class="flex items-center justify-between px-2 py-1">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+              <span class="text-white font-extrabold text-xs tracking-wider">AWN</span>
+            </div>
+            <div>
+              <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+                A.W.N STUDIO
+                <span id="nav-license-status" class="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">PRO</span>
+              </h1>
+              <p class="text-[11px] text-slate-400 font-medium">Movie Recap Studio</p>
+            </div>
+          </div>
+
+          <!-- Close button for mobile -->
+          <button type="button" onclick="App.toggleSidebar(false)" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition md:hidden" title="Close Menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Section 1: Navigation -->
+        <nav class="flex flex-col gap-1">
+          <a href="#" data-tab="transcribe" class="nav-item flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+              <span>Subtitles & Studio</span>
+            </div>
+            <span class="px-1.5 py-0.2 rounded text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30">AUTO</span>
+          </a>
+
+          <a href="#" data-tab="rednote" class="nav-item flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <div class="flex items-center gap-2.5">
+              <span class="text-rose-400 text-sm">📥</span>
+              <span>HD Downloader</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">XHS•TT•YT•FB</span>
+            </div>
+          </a>
+
+          <a href="#" data-tab="translate" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <span class="text-emerald-400 text-sm">🌐</span>
+            <span>SRT & Translate</span>
+          </a>
+
+          <a href="#" data-tab="gemini-key" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <span class="text-indigo-400 text-sm">🤖</span>
+            <span>Gemini AI Key</span>
+          </a>
+
+          <a href="#" data-tab="dashboard" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span>Dashboard</span>
+          </a>
+
+          <a href="#" data-tab="projects" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+            <span>Projects</span>
+          </a>
+        </nav>
+
+        <!-- Section 2: TOOLS -->
+        <div class="flex flex-col gap-1">
+          <p class="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">TOOLS</p>
+
+          <a href="#" data-tab="script-assistant" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-blue-400 bg-blue-600/20 border border-blue-500/40 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+            <span>Script Assistant</span>
+          </a>
+
+          <a href="#" data-tab="recap-studio" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+            <span>Recap Studio</span>
+          </a>
+
+          <a href="#" data-tab="translate" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+            <span>Translate</span>
+          </a>
+
+          <a href="#" data-tab="settings" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition border border-transparent">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span>Settings</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Bottom Credits / Plan Widget -->
+      <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-col gap-2.5">
+        <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="text-slate-400 font-medium">Device License</span>
+            <span id="current-plan-display" class="text-emerald-400 font-bold">Lifetime VIP</span>
+          </div>
+          <div id="license-expiry-display" class="text-[11px] text-slate-400">1 Device Bound • Active</div>
+        </div>
+
+        <div class="px-3 py-2 rounded-xl bg-slate-800/30 border border-slate-700/40 text-[11px] text-slate-400 flex items-center justify-between">
+          <span>Studio Access:</span>
+          <span class="text-emerald-400 font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Pro Active
+          </span>
+        </div>
+
+        <button onclick="location.reload()" class="w-full py-1.5 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-400 text-xs font-medium text-center transition flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Reset Session
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER / MAIN CONTENT VIEWS (Full width on mobile, comfortable padding) -->
+    <main class="flex-1 flex flex-col overflow-y-auto bg-[#07090e] p-2.5 sm:p-4 lg:p-6 pb-20 md:pb-6 relative w-full min-w-0 overflow-x-hidden">
+
+      <!-- ================= VIEW 1: SCRIPT ASSISTANT (Screenshots 1 & 2) ================= -->
+      <section id="view-script-assistant" class="view-tab flex-1 flex flex-col max-w-5xl mx-auto w-full">
+        <!-- Subheader -->
+        <div class="mb-3">
+          <p class="text-[11px] font-bold text-blue-400 uppercase tracking-wider">TOOLS</p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-white tracking-tight">Script Assistant</h2>
+              <p class="text-xs text-slate-400">AI chatbot for Burmese movie recap scripts.</p>
+            </div>
+            <!-- Model badge -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400">Model:</span>
+              <select id="select-script-model" class="act-select text-xs py-1 px-2.5 bg-slate-800 border-slate-700">
+                <option value="gemini-2.5-flash">Default (Gemini 2.5 Flash)</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <option value="offline">Offline Recap Engine</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTRAL INTERACTIVE VIDEO PREVIEW SCREEN (Matching Screenshot 1 & 2) -->
+        <div class="relative glass-panel rounded-2xl overflow-hidden border border-slate-800/80 mb-4 bg-gradient-to-b from-[#121829] to-[#0a0d16] flex flex-col justify-between shadow-2xl min-h-[300px] md:min-h-[360px]">
+          
+          <!-- Top Screen Bar -->
+          <div class="p-3 flex items-center justify-between text-xs text-slate-400 z-10">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+              Live Narration & Subtitle Monitor
+            </span>
+            <div class="flex items-center gap-2">
+              <span id="player-time-display" class="font-mono text-[11px] text-slate-400">00:00 / 00:00</span>
+            </div>
+          </div>
+
+          <!-- Video Canvas / Visualizer Center -->
+          <div class="relative flex-1 flex items-center justify-center p-6 text-center">
+            
+            <!-- Dynamic Subtitle Overlay Banner (Screenshot 1 & 2) -->
+            <div id="player-subtitle-overlay" class="subtitle-caption-overlay px-6 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/10 text-white text-base md:text-lg font-medium tracking-wide max-w-xl mx-auto shadow-2xl transition-all">
+              ကြာကြာလေးနဲ့ ဖရီးအထိထိုးလို့ရနေတာပါပဲ
+            </div>
+
+            <!-- Central Video Control Buttons (Play, -5s, +5s) -->
+            <div class="absolute inset-0 flex items-center justify-center gap-8 pointer-events-none">
+              <!-- Seek -5s -->
+              <button id="player-seek-back" class="pointer-events-auto w-11 h-11 rounded-full bg-slate-800/70 hover:bg-slate-700/80 border border-slate-600/50 flex flex-col items-center justify-center text-slate-200 transition shadow-lg" title="Rewind 5s">
+                <span class="text-xs">↺</span>
+                <span class="text-[9px] font-bold -mt-0.5">5</span>
+              </button>
+
+              <!-- Central Big Play/Pause Button -->
+              <button id="player-play-btn" class="pointer-events-auto w-16 h-16 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white flex items-center justify-center text-xl transition shadow-xl shadow-blue-500/40 glow-primary transform hover:scale-105 active:scale-95">
+                ▶
+              </button>
+
+              <!-- Seek +5s -->
+              <button id="player-seek-forward" class="pointer-events-auto w-11 h-11 rounded-full bg-slate-800/70 hover:bg-slate-700/80 border border-slate-600/50 flex flex-col items-center justify-center text-slate-200 transition shadow-lg" title="Forward 5s">
+                <span class="text-xs">↻</span>
+                <span class="text-[9px] font-bold -mt-0.5">5</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Playhead Progress Line -->
+          <div class="w-full bg-slate-800/50 h-1.5 cursor-pointer relative">
+            <div id="player-progress-fill" class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 w-0 transition-all duration-100"></div>
+          </div>
+        </div>
+
+        <!-- Quick Action Prompt Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-3 shrink-0">
+          <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider shrink-0">Quick Prompts:</span>
+          <button data-prompt="ဒီနေ့မှာတော့ ရုံတင်ငွေစံချိန်တင်ခဲ့တဲ့ အက်ရှင်ကားကောင်းတစ်ကားကို တင်ဆက်ပေးမှာပါ။" class="quick-prompt-pill px-3 py-1 text-xs rounded-full bg-slate-800/70 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
+            🎬 Full Movie Recap
+          </button>
+          <button data-prompt="ကြည့်ရှုသူတွေ စိတ်ဝင်စားသွားစေမယ့် ဆွဲဆောင်မှုအပြည့်နဲ့ Viral Intro Hook ရေးပေးပါ" class="quick-prompt-pill px-3 py-1 text-xs rounded-full bg-slate-800/70 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
+            🔥 Viral Intro Hook
+          </button>
+          <button data-prompt="မထင်မှတ်ထားတဲ့ အလှည့်အပြောင်း Climax အခန်းကို သည်းထိတ်ရင်ဖို ဖြစ်အောင် ရေးပေးပါ" class="quick-prompt-pill px-3 py-1 text-xs rounded-full bg-slate-800/70 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
+            😱 Plot Twist Climax
+          </button>
+          <button data-prompt="လူငယ်ကြိုက် ဟာသစကားလုံးလေးတွေ နှောပြီး ရုပ်ရှင်ဇာတ်လမ်းပြော ရေးပေးပါ" class="quick-prompt-pill px-3 py-1 text-xs rounded-full bg-slate-800/70 hover:bg-slate-700 text-slate-300 border border-slate-700/60 shrink-0 transition">
+            😂 Funny Commentary
+          </button>
+        </div>
+
+        <!-- Chat Conversation Messages Container -->
+        <div id="assistant-chat-messages" class="flex-1 overflow-y-auto pr-2 mb-3 min-h-[160px] flex flex-col">
+          <!-- Initial Welcome Message from Assistant -->
+          <div class="flex flex-col items-start mb-4">
+            <div class="max-w-[90%] rounded-2xl rounded-tl-sm bg-slate-800/90 border border-slate-700/60 px-4 py-3.5 text-slate-100 text-sm shadow-lg leading-relaxed">
+              <p class="font-medium text-blue-300 mb-1">မင်္ဂလာပါ! ACT Script Assistant မှ ကြိုဆိုပါတယ်ခင်ဗျာ။ 🎬</p>
+              <p class="text-slate-300 text-xs leading-relaxed">
+                သင် ဖန်တီးချင်တဲ့ ရုပ်ရှင်အမည် (သို့မဟုတ်) ဇာတ်လမ်းအကြောင်းအရာကို ပြောပြပေးပါ။ လူကြိုက်များစေမယ့် မြန်မာစကားပြော ရုပ်ရှင်ဇာတ်လမ်းပြော (Recap Script) ကို အလိုအလျောက် ရေးသားပေးပါမည်။
+              </p>
+            </div>
+            <span class="text-[11px] text-slate-500 mt-1 ml-1">Script Assistant</span>
+          </div>
+        </div>
+
+        <!-- Chat Input Area (Matching Screenshots 1 & 2) -->
+        <div class="relative flex items-center gap-2 bg-[#111726] border border-blue-500/50 rounded-2xl p-1.5 shadow-xl glow-border shrink-0">
+          <input id="assistant-chat-input" type="text" placeholder="Movie script ပြင်ချင်တာ၊ ရေးချင်တာ ပြောပါ..." class="flex-1 bg-transparent px-4 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none">
+          <button id="btn-assistant-send" class="btn-orange px-6 py-2.5 text-sm font-bold flex items-center justify-center rounded-xl shadow-md transition">
+            Send
+          </button>
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 2: RECAP STUDIO (Screenshot 3) ================= -->
+      <section id="view-recap-studio" class="view-tab flex-1 flex flex-col max-w-5xl mx-auto w-full hidden">
+        
+        <!-- STEP TABS & CREATE RECAP BUTTON (Screenshot 3 Header) -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800/80">
+          <div class="flex items-center gap-1.5 overflow-x-auto py-1">
+            <button data-step="ai-voice" class="studio-step-tab px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 text-white shadow-md shadow-blue-500/30 transition flex items-center gap-1.5">
+              🎙 AI & Voice
+            </button>
+            <button data-step="subtitles" class="studio-step-tab px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5">
+              T Subtitles
+            </button>
+            <button data-step="cover-title" class="studio-step-tab px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5">
+              * Title & Cover
+            </button>
+            <button data-step="watermark" class="studio-step-tab px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5">
+              ❖ Watermark
+            </button>
+            <button data-step="effects" class="studio-step-tab px-3.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-750 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5">
+              ⚡ Effects
+            </button>
+          </div>
+
+          <!-- Glowing Create Recap Action Button (Screenshot 3) -->
+          <button id="btn-create-recap" class="btn-gradient-recap px-6 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transform hover:scale-105 active:scale-95 transition">
+            <span>🎬</span> Create recap
+          </button>
+        </div>
+
+        <!-- STUDIO MAIN CONTENT AREA -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+          
+          <!-- LEFT / FORM CONTROLS COLUMN (7 Cols) -->
+          <div class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Movie Title & Script Input -->
+            <div class="glass-panel p-4 flex flex-col gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Movie / Recap Title (ရုပ်ရှင်အမည်)</label>
+                <input id="studio-movie-title" type="text" placeholder="ဥပမာ - The Dark Knight (ရုပ်ရှင်အကျဉ်းချုပ်)" class="act-input w-full text-xs">
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-xs font-semibold text-slate-300">Recap Script (မြန်မာ ဇာတ်ညွှန်း)</label>
+                  <span class="text-[11px] text-slate-400">စာကြောင်းတစ်ကြောင်းချင်း စာတန်းထိုးပါမည်</span>
+                </div>
+                <textarea id="studio-script-textarea" rows="6" placeholder="ဇာတ်ညွှန်း စာသားများကို ဤနေရာတွင် ရိုက်ထည့်ပါ သို့မဟုတ် Script Assistant မှ ထည့်သွင်းပါ..." class="act-input w-full text-xs leading-relaxed"></textarea>
+              </div>
+            </div>
+
+            <!-- PANEL 1: AI & VOICE (Screenshot 3) -->
+            <div id="panel-ai-voice" class="studio-step-panel flex flex-col gap-4">
+              
+              <!-- Burmese Voice Info Banner (Screenshot 3) -->
+              <div class="p-3.5 rounded-xl bg-slate-800/50 border border-slate-700/60 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs shrink-0">
+                  ACT
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-white">Burmese Voice</h4>
+                  <p class="text-[11px] text-slate-400">Edge TTS is using the configured Burmese voice automatically.</p>
+                </div>
+              </div>
+
+              <!-- Telegram Account Card (Screenshot 3) -->
+              <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 flex flex-col gap-3">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-bold text-white">Telegram Account ချိတ်ဆက်ရန်</h4>
+                      <p class="text-[11px] text-slate-400">Render ပြီးတိုင်း Video ကို Telegram PM ကို တိုက်ရိုက်ပို့ပေးပါမယ်</p>
+                    </div>
+                  </div>
+                  <div id="tg-connection-status" class="text-xs">
+                    <span class="text-slate-400 text-[11px]">ချိတ်ဆက်ရန် အသင့်ရှိသည်</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button id="btn-studio-tg-connect" class="flex-1 py-2 px-3 rounded-lg bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 text-xs font-medium flex items-center justify-center gap-2 transition">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    Telegram ဖွင့်ပြီး ချိတ်ဆက်မည်
+                  </button>
+                </div>
+              </div>
+
+              <!-- Configuration Dropdowns (Screenshot 3) -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Transcription</label>
+                  <select id="select-transcription" class="act-select w-full text-xs">
+                    <option value="OpenRouter">OpenRouter</option>
+                    <option value="Whisper">Whisper AI</option>
+                    <option value="Local">Local Auto Sync</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">TTS provider</label>
+                  <select id="select-tts-provider" class="act-select w-full text-xs">
+                    <option value="Edge TTS (Free)">Edge TTS (Free)</option>
+                    <option value="Gemini">Gemini TTS</option>
+                  </select>
+                  <span class="text-[10px] text-slate-400 mt-1 block">🔒 Verbatik / Noiz က admin အတွက်သာ — Edge TTS (Free) ကိုပဲ သုံးနိုင်ပါတယ်။</span>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Burmese Voice (ဇာတ်ပြော အသံရွေးချယ်ရန်)</label>
+                  <select id="select-burmese-voice" class="act-select w-full text-xs">
+                    <option value="my-MM-ThihaNeural">Thiha (သီဟ - Male / ရုပ်ရှင်ဇာတ်ပြော အသံကြည်)</option>
+                    <option value="my-MM-NilarNeural">Nilar (နီလာ - Female / အသံချို ဇာတ်လမ်းပြော)</option>
+                    <option value="en-US-ChristopherNeural">Christopher (US Male - English Recap)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Voice Style & Speed</label>
+                  <div class="flex items-center gap-2">
+                    <select id="select-voice-speed" class="act-select flex-1 text-xs">
+                      <option value="-10%">Speed: 0.9x (အေးဆေး)</option>
+                      <option value="+0%" selected>Speed: 1.0x (စံနှုန်း)</option>
+                      <option value="+10%">Speed: 1.1x (သွက်လက်)</option>
+                      <option value="+20%">Speed: 1.2x (မြန်ဆန်)</option>
+                    </select>
+                    <button id="btn-test-voice" class="px-3 py-2 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 text-xs font-semibold shrink-0 transition">
+                      🔊 စမ်းနားထောင်
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 2: SUBTITLES -->
+            <div id="panel-subtitles" class="studio-step-panel hidden flex flex-col gap-4">
+              <div class="glass-panel p-4 flex flex-col gap-3">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Subtitle Appearance (စာတန်းထိုး ပုံစံ)</h4>
+                
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Text Color</label>
+                    <input id="studio-sub-color" type="color" value="#ffffff" class="w-full h-9 bg-slate-800 rounded-lg cursor-pointer">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Font Size: <span id="sub-size-val">26px</span></label>
+                    <input id="studio-sub-size" type="range" min="18" max="42" value="26" class="w-full mt-2">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Myanmar Font Family (မြန်မာဖောင့်)</label>
+                  <select id="studio-sub-font" class="act-select w-full text-xs">
+                    <option value="Pyidaungsu" selected>Pyidaungsu (ပြည်ထောင်စု - စံဖောင့်)</option>
+                    <option value="Myanmar Text">Myanmar Text (ဝင်းဒိုးစံဖောင့်)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 3: TITLE & COVER -->
+            <div id="panel-cover-title" class="studio-step-panel hidden flex flex-col gap-4">
+              <div class="glass-panel p-4 flex flex-col gap-3">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Header Title Banner</h4>
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Top Hook Banner Text</label>
+                  <input id="studio-top-banner" type="text" placeholder="ဥပမာ - PART 1 | ရုပ်ရှင် အကျဉ်းချုပ်" class="act-input w-full text-xs">
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Movie / Background Video Source (ရုပ်ရှင် ဗီဒီယို)</label>
+                  <div id="studio-attached-video-badge" class="mb-2 hidden"></div>
+                  <input id="studio-video-upload" type="file" accept="video/mp4,video/mkv" class="text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs">
+                  <p class="text-[10px] text-slate-400 mt-1">Transcribe မှ ပို့ထားသော ဗီဒီယိုကို အလိုအလျောက် သုံးပေးပါမည်။ အခြားဗီဒီယို ပြောင်းလဲလိုပါက ဤနေရာတွင် တင်နိုင်ပါသည်။</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 4: WATERMARK -->
+            <div id="panel-watermark" class="studio-step-panel hidden flex flex-col gap-4">
+              <div class="glass-panel p-4 flex flex-col gap-3">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Channel Watermark (လိုဂို ရေစာ)</h4>
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Watermark Text</label>
+                  <input id="studio-wm-text" type="text" value="@actrecap" class="act-input w-full text-xs">
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Position</label>
+                    <select id="studio-wm-pos" class="act-select w-full text-xs">
+                      <option value="top-right">Top Right (ညာဘက်အပေါ်)</option>
+                      <option value="top-left">Top Left (ဘယ်ဘက်အပေါ်)</option>
+                      <option value="bottom-right">Bottom Right (ညာဘက်အောက်)</option>
+                      <option value="bottom-left">Bottom Left (ဘယ်ဘက်အောက်)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Size: <span id="studio-wm-size-val">32px</span></label>
+                    <input id="studio-wm-size" type="range" min="16" max="64" value="32" oninput="document.getElementById('studio-wm-size-val').innerText = this.value + 'px';" class="w-full mt-2">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Opacity: <span id="studio-wm-opacity-val">70%</span></label>
+                    <input id="studio-wm-opacity" type="range" min="0.2" max="1.0" step="0.1" value="0.7" oninput="document.getElementById('studio-wm-opacity-val').innerText = Math.round(this.value * 100) + '%';" class="w-full mt-2">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 5: EFFECTS & ANTI-COPYRIGHT -->
+            <div id="panel-effects" class="studio-step-panel hidden flex flex-col gap-4">
+              <div class="glass-panel p-4 flex flex-col gap-4">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Anti-Copyright & Audio Ducking</h4>
+                
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                  <div>
+                    <span class="text-xs font-semibold text-white block">Anti-Copyright Speed (1.05x)</span>
+                    <span class="text-[11px] text-slate-400">မူပိုင်ခွင့် ကင်းလွတ်စေရန် အမြန်နှုန်း အနည်းငယ်မြှင့်တင်ခြင်း</span>
+                  </div>
+                  <label class="act-toggle">
+                    <input id="studio-toggle-anticopyright" type="checkbox" checked>
+                    <span class="act-toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                  <div>
+                    <span class="text-xs font-semibold text-white block">Horizontal Flip (Mirror Mode)</span>
+                    <span class="text-[11px] text-slate-400">ဗီဒီယို ဘယ်ညာလှန်ပြီး Copyright စစ်ဆေးမှု ရှောင်လွှဲခြင်း</span>
+                  </div>
+                  <label class="act-toggle">
+                    <input id="studio-toggle-mirror" type="checkbox">
+                    <span class="act-toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                  <div>
+                    <span class="text-xs font-semibold text-white block">Cinematic Background Music (BGM)</span>
+                    <span class="text-[11px] text-slate-400">ဇာတ်လမ်းပြော အသံအောက်မှ စိတ်လှုပ်ရှားဖွယ် BGM ရောစပ်ခြင်း</span>
+                  </div>
+                  <label class="act-toggle">
+                    <input id="studio-toggle-bgm" type="checkbox" checked>
+                    <span class="act-toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">BGM Volume Ducking</label>
+                  <input id="studio-bgm-volume" type="range" min="0.05" max="0.30" step="0.01" value="0.12" class="w-full">
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT / LIVE PREVIEW COLUMN (5 Cols) -->
+          <div class="lg:col-span-5 flex flex-col gap-3">
+            
+            <!-- Aspect Ratio Switcher -->
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="font-semibold text-slate-300">Format & Aspect:</span>
+              <div class="flex items-center gap-1.5">
+                <button data-ratio="16:9" class="aspect-ratio-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-blue-500 bg-blue-500/20 text-blue-300 text-xs font-medium transition">
+                  16:9 (YouTube)
+                </button>
+                <button data-ratio="9:16" class="aspect-ratio-btn px-2.5 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 text-xs font-medium transition">
+                  9:16 (TikTok / Reels)
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Canvas Simulation Box -->
+            <div id="studio-preview-box" class="w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-700/80 relative shadow-2xl flex flex-col justify-between p-4" style="aspect-ratio: 16 / 9;">
+              
+              <!-- Simulated Watermark -->
+              <div class="flex justify-end text-[11px] font-bold text-white/70 select-none">
+                <span id="studio-preview-wm">@actrecap</span>
+              </div>
+
+              <!-- Simulated Center Visual -->
+              <div class="text-center">
+                <div class="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-semibold mb-2">
+                  CINEMATIC RECAP MONITOR
+                </div>
+                <p class="text-xs text-slate-400">Audio Narration + BGM Ducking Ready</p>
+              </div>
+
+              <!-- Live Styled Subtitle -->
+              <div class="text-center">
+                <div id="studio-live-subtitle" class="inline-block px-4 py-1.5 rounded-lg bg-black/75 text-white text-sm font-semibold shadow-lg">
+                  ရုပ်ရှင်ဇာတ်လမ်း အကျဉ်းချုပ် စာတန်းထိုး နမူနာ
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Project Tips -->
+            <div class="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/50 text-[11px] text-slate-400 leading-relaxed">
+              💡 <span class="text-slate-200 font-semibold">ACT Recap အကြံပြုချက်:</span> "Create recap" ခလုတ်ကို နှိပ်လိုက်တာနဲ့ မြန်မာအသံဖိုင်၊ စာတန်းထိုးနှင့် BGM တို့ကို FFmpeg ဖြင့် အလိုအလျောက် ပေါင်းစပ်ထုတ်ပေးပြီး Telegram သို့ တိုက်ရိုက် ပေးပို့နိုင်ပါသည်။
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 3: FREE VOICE (Standalone Edge TTS) ================= -->
+      <section id="view-free-voice" class="view-tab flex-1 flex flex-col max-w-4xl mx-auto w-full hidden">
+        <div class="mb-4">
+          <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <span>🎙</span> Free Voice Studio
+          </h2>
+          <p class="text-xs text-slate-400">Microsoft Edge Neural Burmese Voice Generator (100% Free & Unlimited)</p>
+        </div>
+
+        <div class="glass-panel p-5 flex flex-col gap-4">
+          <!-- Text Area -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-semibold text-slate-300">Enter Burmese Text to Speak</label>
+              <span id="fv-char-count" class="text-[11px] text-slate-400">0 characters</span>
+            </div>
+            <textarea id="fv-text-input" rows="5" placeholder="အသံပြောင်းလိုသော မြန်မာစာသားများကို ဤနေရာတွင် ရိုက်ထည့်ပါ..." class="act-input w-full text-sm leading-relaxed"></textarea>
+          </div>
+
+          <!-- Presets -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[11px] text-slate-400 font-semibold uppercase">Presets:</span>
+            <button data-sample="ဒီနေ့မှာတော့ လူကြိုက်များတဲ့ အက်ရှင်ရုပ်ရှင်ကားကောင်းလေးကို တင်ဆက်ပေးမှာ ဖြစ်ပါတယ် ခင်ဗျာ။" class="fv-sample-chip px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+              နမူနာ ၁: အက်ရှင်ဇာတ်ကား
+            </button>
+            <button data-sample="ညဘက်တစ်ယောက်တည်း မကြည့်သင့်တဲ့ ထိတ်လန့်ဖွယ် သရဲကားလေးကို ပြောပြပေးပါမယ်။" class="fv-sample-chip px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+              နမူနာ ၂: သရဲကား
+            </button>
+          </div>
+
+          <!-- Voice & Pacing Controls -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Voice</label>
+              <select id="fv-select-voice" class="act-select w-full text-xs">
+                <option value="my-MM-ThihaNeural">Thiha (သီဟ - Male)</option>
+                <option value="my-MM-NilarNeural">Nilar (နီလာ - Female)</option>
+                <option value="en-US-ChristopherNeural">Christopher (US Male)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Speed</label>
+              <select id="fv-select-speed" class="act-select w-full text-xs">
+                <option value="-10%">0.9x Slow</option>
+                <option value="+0%" selected>1.0x Normal</option>
+                <option value="+10%">1.1x Fast (Recap Standard)</option>
+                <option value="+20%">1.2x Dynamic</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Pitch</label>
+              <select id="fv-select-pitch" class="act-select w-full text-xs">
+                <option value="-20Hz">Deep Pitch</option>
+                <option value="+0Hz" selected>Normal Pitch</option>
+                <option value="+20Hz">Crisp Pitch</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <button id="btn-fv-generate" class="w-full py-3 rounded-xl btn-gradient-recap font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <span>🎙</span> မြန်မာအသံ ထုတ်ယူမည် (Generate Free Voice)
+          </button>
+
+          <!-- Result Player Container -->
+          <div id="fv-player-container" class="hidden mt-2 p-4 rounded-xl bg-slate-800/70 border border-slate-700 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-emerald-400">✓ Audio Generated Successfully</span>
+              <span id="fv-duration-label" class="text-xs text-slate-400">Duration: 00:00</span>
+            </div>
+            <audio id="fv-audio-tag" controls class="w-full"></audio>
+            
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-700">
+              <a id="fv-dl-mp3" href="#" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition flex items-center gap-1">
+                ⬇ Download MP3
+              </a>
+              <a id="fv-dl-srt" href="#" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition flex items-center gap-1">
+                ⬇ Download SRT
+              </a>
+              <button id="fv-btn-to-studio" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition flex items-center gap-1">
+                🎬 Open in Recap Studio
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 4: CHINESE TO BURMESE TIMELINE STUDIO ================= -->
+      <section id="view-transcribe" class="view-tab flex-1 flex flex-col max-w-6xl mx-auto w-full hidden">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span class="text-blue-400">⚡</span> Chinese to Burmese Subtitle & Timeline Studio
+            </h2>
+            <p class="text-xs text-slate-400">တရုတ်ဗီဒီယို (သို့မဟုတ်) SRT ဖိုင်မှ အသံစကားပြောများကို Timeline အတိအကျဖြင့် မြန်မာစာတန်းထိုးနှင့် အသံဖလှယ်ပေးသည့် စနစ်။</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-400">Engine:</span>
+            <select id="transcribe-whisper-model" class="act-select text-xs py-1 px-2.5 bg-slate-800 border-slate-700">
+              <option value="base" selected>Whisper Base (Fast & Balanced)</option>
+              <option value="small">Whisper Small (High Precision)</option>
+              <option value="tiny">Whisper Tiny (Ultra Fast)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- TOP QUICK ACCESS BAR (Links to RedNote & Gemini Pages) -->
+        <div class="glass-panel p-3 mb-4 border-slate-700/80 bg-slate-900/60 flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2 text-xs">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600/30 text-indigo-300 border border-indigo-500/30">AI STORY ENGINE</span>
+            <span id="transcribe-ai-badge" class="text-slate-300">Checking AI status...</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="App.switchTab('rednote')" class="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-medium flex items-center gap-1.5 transition">
+              <span>📕</span> Need to Download from RedNote first?
+            </button>
+            <button onclick="App.switchTab('gemini-key')" class="px-3 py-1.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-medium flex items-center gap-1.5 transition">
+              <span>🤖</span> Manage Gemini API Key
+            </button>
+          </div>
+        </div>
+
+        <!-- UPLOAD SECTION: DUAL INPUT (Video or SRT) -->
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- Card 1: Upload Video (Manual Transcribe Mode) -->
+          <div class="glass-panel p-5 flex flex-col justify-between border-slate-700 hover:border-blue-500/80 transition group">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>🎬</span> Option 1: Video File
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30">Manual Control</span>
+              </div>
+              <h3 class="text-sm font-bold text-white mb-1">တရုတ် ရုပ်ရှင်ဗီဒီယို တင်သွင်းရန်</h3>
+              <p class="text-xs text-slate-400 mb-3">ဗီဒီယို ရွေးချယ်ပြီးပါက Transcribe ခလုတ်ကို နှိပ်မှသာ အသံဖမ်းယူပါမည် (SRT ရှိပါက အသံဖမ်းရန် မစောင့်ဘဲ Option 2 မှ တိုက်ရိုက် သုံးနိုင်ပါသည်)။</p>
+            </div>
+
+            <div class="flex flex-col gap-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400 shrink-0">Source Lang:</span>
+                <select id="transcribe-source-lang" class="act-select flex-1 text-xs py-1">
+                  <option value="zh" selected>Chinese (中文 - တရုတ်ဘာသာ)</option>
+                  <option value="auto">Auto Detect Language</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+
+              <button onclick="document.getElementById('transcribe-video-input').click()" class="w-full py-2.5 rounded-xl btn-gradient-recap text-xs font-bold flex items-center justify-center gap-2 shadow-md">
+                <span>📁</span> Select Chinese Video (MP4/MKV)
+              </button>
+              <input id="transcribe-video-input" type="file" accept="video/*,audio/*" class="hidden" onchange="Tools.onVideoFileSelected(this.files[0])">
+
+              <!-- Staged Video Ready / Manual Transcribe Action Box -->
+              <div id="video-selected-status" class="hidden p-3.5 rounded-xl bg-blue-950/40 border border-blue-500/50 flex flex-col gap-2.5 mt-1 shadow-lg">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white flex items-center gap-1.5 truncate max-w-[220px]" id="selected-video-filename">
+                    🎬 video.mp4
+                  </span>
+                  <span class="text-[11px] font-mono text-blue-300" id="selected-video-filesize">24.5 MB</span>
+                </div>
+                <div class="text-[11px] text-slate-300">
+                  ဗီဒီယို အဆင်သင့်ဖြစ်ပါပြီ။ အသံဖမ်းယူ ဘာသာပြန်လိုပါက အောက်ပါခလုတ်ကို နှိပ်ပါ-
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button id="btn-manual-transcribe-trigger" onclick="Tools.startManualTranscribe()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md">
+                    <span>⚡</span> Want to Transcribe (အသံဖမ်းယူ ဘာသာပြန်မည်)
+                  </button>
+                  <button onclick="Tools.clearStagedVideo()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">
+                    ✕ Cancel
+                  </button>
+                </div>
+                <div class="text-[10px] text-emerald-400">
+                  💡 သင့်တွင် SRT စာတန်းထိုး ရှိပြီးပါက အသံဖမ်းရန် မစောင့်ဘဲ Option 2 မှ Chinese SRT ဖိုင်ကို တိုက်ရိုက် ထည့်သွင်းနိုင်ပါသည်။
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Upload SRT directly -->
+          <div class="glass-panel p-5 flex flex-col justify-between border-slate-700 hover:border-emerald-500/80 transition group">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>📄</span> Option 2: Chinese SRT
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Instant</span>
+              </div>
+              <h3 class="text-sm font-bold text-white mb-1">တရုတ် စာတန်းထိုး (.srt) တင်သွင်းရန်</h3>
+              <p class="text-xs text-slate-400 mb-3">သင့်တွင် တရုတ် SRT ဖိုင် ရှိနှင့်ပြီးပါက Timeline တူညီစွာဖြင့် မြန်မာဘာသာသို့ တိုက်ရိုက် ပြောင်းလဲပေးပါမည်။</p>
+            </div>
+
+            <div class="flex flex-col gap-2.5">
+              <div class="text-[11px] text-slate-400">
+                Preserves exact millisecond timestamps (00:00:00,000).
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="document.getElementById('transcribe-srt-input').click()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition">
+                  <span>📄</span> Upload Chinese .SRT
+                </button>
+                <button onclick="Tools.loadDemoChineseSrt()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition" title="Try with Sample Chinese Subtitle">
+                  ⚡ နမူနာဖြင့် စမ်းမည်
+                </button>
+              </div>
+              <input id="transcribe-srt-input" type="file" accept=".srt,.vtt,.txt" class="hidden" onchange="Tools.handleSrtUpload(this.files[0])">
+            </div>
+          </div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div id="transcribe-status" class="text-xs text-slate-400 mb-3 min-h-[20px]"></div>
+
+        <!-- REAL-TIME PROGRESS & PERCENTAGE MONITOR -->
+        <div id="transcribe-loading-state" class="hidden p-5 sm:p-6 rounded-2xl glass-panel border border-blue-500/60 bg-gradient-to-b from-blue-950/40 via-slate-900 to-slate-900 shadow-2xl flex flex-col gap-3.5 mb-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-lg animate-pulse">
+                ⚡
+              </div>
+              <div>
+                <h4 id="transcribe-progress-title" class="text-sm font-bold text-white flex items-center gap-2">
+                  <span>AI Subtitle & Timeline Transcription In Progress...</span>
+                </h4>
+                <p id="transcribe-progress-phase" class="text-xs text-blue-300 font-medium mt-0.5">
+                  အသံဖိုင် သီးသန့် ခွဲထုတ်နေပါသည် (Extracting Audio)...
+                </p>
+              </div>
+            </div>
+
+            <!-- Percentage Display -->
+            <div class="text-right">
+              <span id="transcribe-percent-text" class="text-2xl sm:text-3xl font-extrabold text-blue-400 font-mono tracking-tight">0%</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar Track & Glow Fill -->
+          <div class="w-full h-3.5 rounded-full bg-slate-800/90 overflow-hidden border border-slate-700/80 p-0.5 relative shadow-inner">
+            <div id="transcribe-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400 transition-all duration-300 ease-out relative shadow-lg shadow-blue-500/50" style="width: 5%;">
+              <div class="absolute inset-0 bg-white/20 animate-pulse rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Time Left & Detail Stats -->
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 pt-1 border-t border-slate-800/80">
+            <span class="flex items-center gap-1.5 text-slate-300">
+              <span>⏱️</span>
+              <span>ခန့်မှန်း ကျန်ရှိချိန် (Time Left):</span>
+              <strong id="transcribe-eta-text" class="text-emerald-400 font-mono font-bold">~25 စက္ကန့်</strong>
+            </span>
+
+            <span id="transcribe-model-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              Whisper AI + Real Gemini AI Engine
+            </span>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE TIMELINE STUDIO & PREVIEW (Displayed after processing) -->
+        <div id="transcribe-result-box" class="hidden flex-1 flex flex-col gap-3">
+          
+          <!-- TOP STUDIO GRID: VIDEO PREVIEW & UNDER-VIDEO COMPACT CONTROL DECK (LEFT) + TIMELINE & SUBTITLE EDITOR (RIGHT) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+            
+            <!-- LEFT COLUMN (5 cols on lg, full width on Android): VIDEO & DIRECT UNDER-VIDEO CONTROLS -->
+            <div class="lg:col-span-5 flex flex-col gap-2.5">
+              
+              <!-- 1. The Video Preview Player Screen (Sticky / Responsive for Android & Desktop) -->
+              <div id="transcribe-preview-container" class="relative rounded-2xl overflow-hidden bg-black border border-slate-700/80 shadow-2xl aspect-video flex flex-col justify-between max-h-[360px] sm:max-h-[420px] mx-auto w-full transition-all">
+                <video id="transcribe-preview-video" controls class="w-full h-full object-contain bg-black"></video>
+
+                <!-- Live Blur Guide Box Overlay on Video (Frosted Glass Simulation) -->
+                <div id="video-blur-guide-overlay" class="hidden absolute inset-x-0 w-full backdrop-blur-md bg-white/20 border-y border-dashed border-rose-400/90 pointer-events-none flex items-center justify-center transition-all z-20 shadow-lg">
+                  <span class="text-[9px] uppercase font-bold text-rose-200 tracking-wider bg-black/75 px-2 py-0.5 rounded shadow">
+                    မူရင်း စာတန်း ဝါးမည့်နေရာ (Blur Zone)
+                  </span>
+                </div>
+
+                <!-- Live Channel Logo Overlay on Video -->
+                <div id="video-logo-preview-overlay" class="hidden absolute pointer-events-none z-30 transition-all p-1.5">
+                  <img id="video-logo-img" src="" alt="Logo" class="max-w-full h-auto object-contain drop-shadow-md">
+                </div>
+
+                <!-- Live Subtitle Overlay on Video -->
+                <div id="video-live-subtitle-overlay" class="hidden absolute bottom-10 inset-x-4 mx-auto max-w-md p-2.5 rounded-xl bg-black/85 backdrop-blur-md border border-white/10 text-center shadow-2xl pointer-events-none transition-all z-40"></div>
+              </div>
+
+              <!-- 2. COMPACT UNDER-VIDEO CONTROL DECK (Directly under video, small buttons & sliders for Android/Mobile) -->
+              <div class="p-2.5 rounded-xl glass-panel border border-slate-700/80 flex flex-col gap-2 shadow-lg">
+                
+                <!-- Quick Category Selector Pills (Small compact buttons) -->
+                <div class="flex items-center justify-between gap-1 overflow-x-auto pb-1 no-scrollbar border-b border-slate-800">
+                  <div class="flex items-center gap-1 text-[11px] font-semibold">
+                    <button type="button" onclick="Tools.switchControlDeckTab('layout')" id="deck-btn-layout" class="deck-pill active px-2.5 py-1 rounded-lg bg-blue-600 text-white flex items-center gap-1 transition shadow-sm">
+                      <span>📐</span> Layout
+                    </button>
+                    <button type="button" onclick="Tools.switchControlDeckTab('blur')" id="deck-btn-blur" class="deck-pill px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1 transition">
+                      <span>🛡️</span> Blur
+                    </button>
+                    <button type="button" onclick="Tools.switchControlDeckTab('logo')" id="deck-btn-logo" class="deck-pill px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1 transition">
+                      <span>🏷️</span> Logo
+                    </button>
+                    <button type="button" onclick="Tools.switchControlDeckTab('subtitle')" id="deck-btn-subtitle" class="deck-pill px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1 transition">
+                      <span>💬</span> Subtitles
+                    </button>
+                    <button type="button" onclick="Tools.switchControlDeckTab('audio')" id="deck-btn-audio" class="deck-pill px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1 transition">
+                      <span>🎵</span> Audio
+                    </button>
+                  </div>
+                  <span class="text-[10px] text-slate-400 hidden sm:inline">⚡ Live Deck</span>
+                </div>
+
+                <!-- TAB 1: Video Layout & Ratio -->
+                <div id="deck-panel-layout" class="deck-panel flex flex-col gap-2 py-0.5">
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <label class="text-[10px] text-slate-400 block mb-1 font-semibold">Ratio (အရွယ်အစား):</label>
+                      <div class="grid grid-cols-2 gap-1">
+                        <button type="button" onclick="Tools.quickSetRatio('original')" id="ratio-btn-original" class="ratio-btn active px-1.5 py-1 rounded bg-blue-600 text-white text-[10px] font-bold border border-blue-500">Original</button>
+                        <button type="button" onclick="Tools.quickSetRatio('16:9')" id="ratio-btn-16-9" class="ratio-btn px-1.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold border border-slate-700">16:9 YT</button>
+                        <button type="button" onclick="Tools.quickSetRatio('9:16')" id="ratio-btn-9-16" class="ratio-btn px-1.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold border border-slate-700">9:16 Shorts</button>
+                        <button type="button" onclick="Tools.quickSetRatio('1:1')" id="ratio-btn-1-1" class="ratio-btn px-1.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold border border-slate-700">1:1 Square</button>
+                      </div>
+                      <select id="transcribe-aspect-ratio" onchange="Tools.onVideoLayoutChange()" class="hidden">
+                        <option value="original" selected>Original</option>
+                        <option value="16:9">16:9</option>
+                        <option value="9:16">9:16</option>
+                        <option value="1:1">1:1</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="text-[10px] text-slate-400 block mb-1 font-semibold">Resize Mode:</label>
+                      <select id="transcribe-resize-mode" class="act-select text-[11px] py-1 px-2 w-full bg-slate-900 border-slate-700 text-slate-200">
+                        <option value="fit_blur" selected>Blurred Fill (အကြည်ဝါး)</option>
+                        <option value="crop">Center Crop (ဖြတ်ညှိ)</option>
+                      </select>
+                      <p class="text-[9px] text-slate-500 mt-1">9:16 Shorts အတွက် အကြည်ဝါးခံပြီး အလယ်ညှိပေးပါသည်</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TAB 2: Anti-Copyright Blur Band -->
+                <div id="deck-panel-blur" class="deck-panel hidden flex flex-col gap-2 py-0.5">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-rose-400 flex items-center gap-1">
+                      <span>🌫️</span> မူရင်း စာတန်း ဝါးမည် (Blur Band)
+                    </span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="transcribe-blur-enable" onchange="Tools.onBlurToggleChange()" class="sr-only peer">
+                      <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-600"></div>
+                    </label>
+                  </div>
+                  <div id="transcribe-blur-controls" class="grid grid-cols-2 gap-2 opacity-40 pointer-events-none transition-opacity text-[11px]">
+                    <div class="flex items-center gap-1.5 bg-slate-900/70 p-1.5 rounded-lg border border-slate-800">
+                      <span class="text-[10px] text-slate-400 shrink-0">↕ Y နေရာ:</span>
+                      <input id="transcribe-blur-y-slider" type="range" min="10" max="95" value="56" oninput="Tools.onBlurParamsChange()" class="flex-1 h-1.5 accent-rose-500 cursor-pointer">
+                      <span id="transcribe-blur-y-label" class="font-mono text-[10px] text-rose-400 font-bold w-6 text-right">56%</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-slate-900/70 p-1.5 rounded-lg border border-slate-800">
+                      <span class="text-[10px] text-slate-400 shrink-0">↕ အမြင့်:</span>
+                      <input id="transcribe-blur-h-slider" type="range" min="4" max="25" value="8" oninput="Tools.onBlurParamsChange()" class="flex-1 h-1.5 accent-rose-500 cursor-pointer">
+                      <span id="transcribe-blur-h-label" class="font-mono text-[10px] text-rose-400 font-bold w-6 text-right">8%</span>
+                    </div>
+                  </div>
+                  <p class="text-[9px] text-slate-400">💡 ဆလိုက်ဒါ ရွှေ့လျှင် အပေါ်ရှိ ဗီဒီယိုပေါ်တွင် ဝါးမည့်နေရာ (ပန်းရောင်ဘောင်) တိုက်ရိုက်ပြောင်းပါမည်။</p>
+                </div>
+
+                <!-- TAB 3: Channel Logo -->
+                <div id="deck-panel-logo" class="deck-panel hidden flex flex-col gap-2 py-0.5">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                      <span>🏷️</span> Channel Logo ရေစာ
+                    </span>
+                    <button onclick="document.getElementById('transcribe-logo-input').click()" class="px-2 py-0.5 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-[10px] font-semibold flex items-center gap-1 transition">
+                      <span>➕</span> <span id="transcribe-logo-status">Upload Logo</span>
+                    </button>
+                    <input id="transcribe-logo-input" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="Tools.handleLogoUpload(this.files[0])">
+                  </div>
+                  <div id="transcribe-logo-controls" class="grid grid-cols-3 gap-1.5 text-[10px]">
+                    <div>
+                      <span class="text-slate-400 block mb-0.5">နေရာ:</span>
+                      <select id="transcribe-logo-pos" onchange="Tools.onLogoParamsChange()" class="act-select text-[10px] py-1 px-1 bg-slate-900 border-slate-700 text-slate-200 w-full">
+                        <option value="top-right" selected>Top-R (ညာပေါ်)</option>
+                        <option value="top-left">Top-L (ဘယ်ပေါ်)</option>
+                        <option value="bottom-right">Btm-R (ညာအောက်)</option>
+                        <option value="bottom-left">Btm-L (ဘယ်အောက်)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <div class="flex justify-between"><span class="text-slate-400">ဆိုဒ်:</span><span id="transcribe-logo-size-label" class="text-emerald-400 font-bold">18%</span></div>
+                      <input id="transcribe-logo-size" type="range" min="8" max="35" value="18" oninput="Tools.onLogoParamsChange()" class="w-full h-1.5 accent-emerald-500 cursor-pointer">
+                    </div>
+                    <div>
+                      <div class="flex justify-between"><span class="text-slate-400">ကြည်လင်မှု:</span><span id="transcribe-logo-opacity-label" class="text-emerald-400 font-bold">85%</span></div>
+                      <input id="transcribe-logo-opacity" type="range" min="30" max="100" value="85" oninput="Tools.onLogoParamsChange()" class="w-full h-1.5 accent-emerald-500 cursor-pointer">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TAB 4: Subtitles Style & Size -->
+                <div id="deck-panel-subtitle" class="deck-panel hidden flex flex-col gap-2 py-0.5">
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px]">
+                    <div>
+                      <label class="text-slate-400 block mb-0.5">ဘာသာစကား:</label>
+                      <select id="transcribe-sub-mode" onchange="Tools.onSubModeChange()" class="act-select text-[10px] py-1 px-1.5 bg-slate-900 border-blue-500/50 text-white w-full">
+                        <option value="my" selected>🇲🇲 မြန်မာသီးသန့်</option>
+                        <option value="my_en">🇲🇲+🇬🇧 မြန်မာ+English</option>
+                        <option value="my_zh">🇲🇲+🇨🇳 မြန်မာ+တရုတ်</option>
+                        <option value="en">🇬🇧 English Only</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="text-slate-400 block mb-0.5">စတိုင်:</label>
+                      <select id="transcribe-sub-style" onchange="Tools.onStyleChange()" class="act-select text-[10px] py-1 px-1 bg-slate-900 border-purple-500/50 text-purple-200 w-full">
+                        <option value="box" selected>⬛ အနားလုံးဘောက်စ်</option>
+                        <option value="outline">🎬 Outline ရုပ်ရှင်ဘောင်</option>
+                        <option value="banner">📏 Full Banner</option>
+                        <option value="yellow">⭐ Viral Yellow</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="text-slate-400 block mb-0.5">ဖောင့်:</label>
+                      <div class="flex items-center gap-1">
+                        <select id="transcribe-select-font" onchange="Tools.onFontChange()" class="act-select text-[10px] py-1 px-1 bg-slate-900 border-emerald-500/50 text-emerald-300 flex-1">
+                          <option value="Pyidaungsu" selected>Pyidaungsu</option>
+                          <option value="Myanmar Text">Myanmar Text</option>
+                        </select>
+                        <button onclick="document.getElementById('transcribe-font-file-input').click()" class="px-1.5 py-0.5 rounded bg-slate-800 text-blue-300 border border-blue-500/30 text-[9px] font-bold">+Font</button>
+                        <input id="transcribe-font-file-input" type="file" accept=".ttf,.otf" class="hidden" onchange="Tools.handleFontUpload(this.files[0])">
+                      </div>
+                    </div>
+                    <div>
+                      <label class="text-slate-400 block mb-0.5">Size & အရောင်:</label>
+                      <div class="flex items-center gap-1">
+                        <select id="transcribe-font-size" onchange="Tools.onStyleChange()" class="act-select text-[10px] py-1 px-1 bg-slate-900 border-slate-700 text-slate-200 flex-1">
+                          <option value="20">20px</option>
+                          <option value="24">24px</option>
+                          <option value="28">28px</option>
+                          <option value="34" selected>34px</option>
+                          <option value="42">42px</option>
+                          <option value="50">50px</option>
+                        </select>
+                        <input id="transcribe-sub-color" type="color" value="#ffffff" onchange="Tools.onStyleChange()" class="w-6 h-6 rounded border border-slate-700 bg-slate-800 cursor-pointer p-0.5">
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Position & Y Slider -->
+                  <div class="flex items-center justify-between gap-2 text-[10px] bg-slate-900/70 p-1.5 rounded-lg border border-slate-800">
+                    <span class="text-slate-400 shrink-0">နေရာ:</span>
+                    <select id="transcribe-sub-pos" onchange="Tools.onPositionChange(this.value)" class="act-select text-[10px] py-0.5 px-1 bg-slate-800 border-amber-500/50 text-amber-200">
+                      <option value="bottom" selected>⬇ Bottom (86%)</option>
+                      <option value="middle">⏺ Middle (50%)</option>
+                      <option value="top">⬆ Top (10%)</option>
+                      <option value="custom">🎯 Custom</option>
+                    </select>
+                    <span class="text-slate-400 shrink-0">↕ Y:</span>
+                    <input id="transcribe-pos-slider" type="range" min="10" max="92" value="86" oninput="Tools.onPositionSliderChange(this.value)" class="flex-1 h-1.5 accent-blue-500 cursor-pointer">
+                    <span id="transcribe-pos-label" class="font-mono text-blue-400 font-bold w-6 text-right">86%</span>
+                  </div>
+                </div>
+
+                <!-- TAB 5: Audio & BGM Mixing -->
+                <div id="deck-panel-audio" class="deck-panel hidden flex flex-col gap-2 py-0.5">
+                  <div class="grid grid-cols-2 gap-2 text-[10px]">
+                    <div class="bg-slate-900/70 p-1.5 rounded-lg border border-slate-800">
+                      <div class="flex justify-between"><span class="text-slate-400">မူရင်းအသံ (Original):</span><span id="transcribe-orig-vol-label" class="text-blue-400 font-bold">100%</span></div>
+                      <input id="transcribe-orig-vol-slider" type="range" min="0" max="100" value="100" oninput="Tools.onOrigVolSliderChange(this.value)" class="w-full h-1.5 accent-blue-500 cursor-pointer">
+                      <div class="flex justify-between mt-1">
+                        <button type="button" onclick="Tools.setOrigAudioVolume(0)" class="text-[9px] text-rose-400 hover:underline">Mute (0%)</button>
+                        <button type="button" onclick="Tools.setOrigAudioVolume(30)" class="text-[9px] text-slate-300 hover:underline">Low (30%)</button>
+                        <button type="button" onclick="Tools.setOrigAudioVolume(100)" class="text-[9px] text-blue-300 hover:underline">Full (100%)</button>
+                      </div>
+                    </div>
+                    <div class="bg-slate-900/70 p-1.5 rounded-lg border border-slate-800">
+                      <div class="flex justify-between"><span class="text-slate-400">BGM Volume:</span><span id="transcribe-bgm-vol-label" class="text-purple-400 font-bold">35%</span></div>
+                      <input id="transcribe-bgm-vol-slider" type="range" min="0" max="100" value="35" oninput="Tools.onBgmVolSliderChange(this.value)" class="w-full h-1.5 accent-purple-500 cursor-pointer">
+                      <div class="flex items-center justify-between gap-1 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer text-[9px] text-slate-300">
+                          <input type="checkbox" id="transcribe-bgm-loop" checked class="w-3 h-3 accent-purple-500">
+                          <span>Loop</span>
+                        </label>
+                        <button onclick="document.getElementById('transcribe-bgm-file-input').click()" class="text-[9px] text-purple-300 hover:underline">+Upload MP3</button>
+                        <input id="transcribe-bgm-file-input" type="file" accept="audio/*" class="hidden" onchange="Tools.handleBgmFileUpload(this.files[0])">
+                      </div>
+                    </div>
+                  </div>
+                  <!-- YouTube BGM Link Input -->
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <input id="transcribe-yt-bgm-input" type="text" placeholder="YouTube BGM Link..." class="act-input text-[10px] py-1 px-2 flex-1">
+                    <button id="btn-yt-bgm-dl" onclick="Tools.handleYouTubeBgmDownload()" class="px-2 py-1 rounded bg-purple-600/50 hover:bg-purple-600 text-purple-200 hover:text-white text-[10px] font-bold shrink-0 transition">
+                      ⬇ ရယူမည်
+                    </button>
+                  </div>
+                  <div id="transcribe-bgm-active-box" class="hidden p-1 rounded bg-purple-900/30 border border-purple-500/30 text-[10px] flex items-center justify-between">
+                    <span id="transcribe-bgm-active-name" class="truncate text-purple-300 font-medium">BGM Selected</span>
+                    <button onclick="Tools.removeActiveBgm()" class="text-rose-400 hover:text-rose-300 font-bold ml-1">✕</button>
+                  </div>
+                  <audio id="transcribe-bgm-audio" loop class="hidden"></audio>
+                </div>
+
+                <!-- PRIMARY ACTION BAR UNDER DECK (Burn Video & Polish Voice) -->
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+                  <button id="btn-polish-natural" onclick="Tools.polishAllSegments()" class="px-2.5 py-1.5 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 transition">
+                    <span>✨</span> Polish စကားပြေ
+                  </button>
+                  
+                  <button id="btn-dl-subtitled-video" class="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/25 transition">
+                    <span>🎬</span> Subtitle ပါ ဗီဒီယို ဒေါင်းလုဒ် (MP4)
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN (7 cols on lg, full width on Android): TIMELINE & SUBTITLE EDITOR TABLE -->
+            <div class="lg:col-span-7 glass-panel flex flex-col overflow-hidden max-h-[460px] sm:max-h-[500px] border border-slate-700/80 shadow-lg">
+              
+              <!-- Subtitle Header Bar with Timeline ON/OFF Toggle and Copy Buttons -->
+              <div class="p-2.5 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+                
+                <!-- Left: Timeline ON / OFF Toggle & 1-Click Subtitle Copy -->
+                <div class="flex items-center gap-1.5">
+                  <button type="button" id="btn-toggle-timeline-mode" onclick="Tools.toggleTimelineMode()" class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition flex items-center gap-1 bg-blue-600/30 text-blue-300 border-blue-500/50 shadow-sm" title="Toggle between timeline timestamped text and clean subtitle text">
+                    <span id="timeline-toggle-icon">⏱️</span>
+                    <span>Timeline: <strong id="timeline-toggle-status">ON</strong></span>
+                  </button>
+
+                  <button type="button" onclick="Tools.copySubtitles()" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-[11px] font-bold flex items-center gap-1 shadow transition" title="1-Click copy subtitle text based on Timeline ON/OFF status">
+                    <span>📋</span> Copy Subtitles
+                  </button>
+
+                  <button type="button" onclick="Tools.copyCleanTextOnly()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-medium flex items-center gap-1 transition" title="Copy clean Burmese text only without any timestamps">
+                    <span>📄</span> စာသားသီးသန့်
+                  </button>
+
+                  <button type="button" onclick="Tools.copyFullSrt()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-medium flex items-center gap-1 transition" title="Copy full SRT format with millisecond timestamps">
+                    <span>⏱️</span> SRT အပြည့်
+                  </button>
+                </div>
+
+                <!-- Right: Export Links -->
+                <div class="flex items-center gap-1.5">
+                  <a id="btn-dl-burmese-srt" href="#" download="burmese_recap.srt" class="px-2 py-1 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 transition">
+                    ⬇ .SRT
+                  </a>
+                  <button type="button" onclick="Tools.generateBurmeseVoiceForTimeline()" class="px-2 py-1 rounded-lg bg-purple-600/80 hover:bg-purple-600 text-white text-[10px] font-medium flex items-center gap-1 transition">
+                    🎙 Voice
+                  </button>
+                  <button type="button" onclick="Tools.sendTimelineToStudio()" class="px-2 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white text-[10px] font-medium flex items-center gap-1 transition">
+                    🎬 Studio
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Interactive Subtitle Table -->
+              <div class="overflow-y-auto flex-1">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead class="sticky top-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 text-[11px] text-slate-400 select-none">
+                    <tr>
+                      <th id="th-timeline-col" class="py-2 px-2.5 w-24">Time</th>
+                      <th class="py-2 px-2.5">🇲🇲 Burmese (မြန်မာဇာတ်ပြော)</th>
+                      <th class="py-2 px-2.5">🇬🇧 English</th>
+                      <th class="py-2 px-2.5">🇨🇳 Original (Chinese)</th>
+                      <th class="py-2 px-2 w-9 text-right">Play</th>
+                    </tr>
+                  </thead>
+                  <tbody id="timeline-table-body">
+                    <!-- Populated by Tools.renderTimelineTable() -->
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- BOTTOM SECTION: ONE-CLICK VIRAL CAPTION PACKAGES (TIKTOK, YT SHORTS, FB REELS, FAIR USE SAFE) -->
+          <div class="p-3.5 rounded-xl glass-panel border border-slate-700/80 flex flex-col gap-3 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-600 text-white flex items-center gap-1 shadow-sm">
+                  <span>📢</span> Social Media 1-Click Copy
+                </span>
+                <h3 class="text-xs font-bold text-white">One-Click Copy for TikTok, YouTube Shorts, Facebook Reels & Copyright Safe</h3>
+              </div>
+              <button type="button" id="btn-generate-caption" onclick="Tools.generateViralCaption()" class="px-3 py-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow">
+                <span>⚡</span> Generate Viral Captions
+              </button>
+            </div>
+
+            <!-- 4 Quick 1-Click Action Buttons for Platforms -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              
+              <!-- 1. TikTok 1-Click Copy -->
+              <button type="button" onclick="Tools.copyPlatformCaption('tiktok')" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-teal-500/40 hover:border-teal-400 text-left transition flex flex-col gap-1 group shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-teal-300 flex items-center gap-1">
+                    <span>🎵</span> TikTok
+                  </span>
+                  <span class="px-1.5 py-0.2 rounded text-[9px] bg-teal-500/20 text-teal-300 font-bold">1-Click Copy</span>
+                </div>
+                <p class="text-[10px] text-slate-400">Hook စာသား + ဗိုင်းရပ် TikTok Hashtags များ</p>
+              </button>
+
+              <!-- 2. YouTube Shorts 1-Click Copy -->
+              <button type="button" onclick="Tools.copyPlatformCaption('yt')" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-red-500/40 hover:border-red-400 text-left transition flex flex-col gap-1 group shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-red-300 flex items-center gap-1">
+                    <span>🔴</span> YouTube Shorts
+                  </span>
+                  <span class="px-1.5 py-0.2 rounded text-[9px] bg-red-500/20 text-red-300 font-bold">1-Click Copy</span>
+                </div>
+                <p class="text-[10px] text-slate-400">SEO Title + Fair Use Safe + Shorts Tags</p>
+              </button>
+
+              <!-- 3. Facebook Reels 1-Click Copy -->
+              <button type="button" onclick="Tools.copyPlatformCaption('reels')" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-blue-500/40 hover:border-blue-400 text-left transition flex flex-col gap-1 group shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-blue-300 flex items-center gap-1">
+                    <span>📘</span> Facebook Reels
+                  </span>
+                  <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-500/20 text-blue-300 font-bold">1-Click Copy</span>
+                </div>
+                <p class="text-[10px] text-slate-400">ဆွဲဆောင်မှုရှိသော Hook + Follow CTA + Tags</p>
+              </button>
+
+              <!-- 4. Copyright Safe Fair Use Notice 1-Click Copy -->
+              <button type="button" onclick="Tools.copyPlatformCaption('disclaimer')" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-amber-500/40 hover:border-amber-400 text-left transition flex flex-col gap-1 group shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
+                    <span>🛡️</span> Copyright Safe
+                  </span>
+                  <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-500/20 text-amber-300 font-bold">Fair Use Copy</span>
+                </div>
+                <p class="text-[10px] text-slate-400">Section 107 Fair Use ကာကွယ်မှု စာသား</p>
+              </button>
+
+            </div>
+
+            <!-- Editable Fields for Customization -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs pt-1">
+              <div class="md:col-span-6 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-[11px] font-semibold text-slate-300">Viral Title (ခေါင်းစဉ်):</label>
+                  <button type="button" onclick="Tools.copyToClipboard('caption-title-input', 'ခေါင်းစဉ်')" class="text-[10px] text-blue-400 hover:text-blue-300 font-bold">📋 Copy</button>
+                </div>
+                <input id="caption-title-input" type="text" placeholder="Title will appear here..." class="act-input w-full text-xs font-medium text-white bg-slate-900/90">
+
+                <div class="flex items-center justify-between mt-1">
+                  <label class="text-[11px] font-semibold text-slate-300">Viral Hashtags:</label>
+                  <button type="button" onclick="Tools.copyToClipboard('caption-hashtags-input', 'Hashtags')" class="text-[10px] text-purple-400 hover:text-purple-300 font-bold">📋 Copy</button>
+                </div>
+                <input id="caption-hashtags-input" type="text" placeholder="#MovieRecap #BurmeseRecap..." class="act-input w-full text-xs font-mono text-purple-200 bg-slate-900/90">
+              </div>
+
+              <div class="md:col-span-6 flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-[11px] font-semibold text-slate-300">Full Caption Preview:</label>
+                  <button type="button" onclick="Tools.copyToClipboard('caption-full-textarea', 'Full Caption')" class="px-2 py-0.5 rounded bg-emerald-600/40 hover:bg-emerald-600 text-emerald-200 hover:text-white text-[10px] font-bold transition">📋 Copy Full</button>
+                </div>
+                <textarea id="caption-full-textarea" rows="4" placeholder="Full caption package will appear here..." class="act-input w-full text-xs text-slate-200 bg-slate-900/90 resize-none h-[88px]"></textarea>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 5: STREAM CLIP (BETA) ================= -->
+      <section id="view-stream-clip" class="view-tab flex-1 flex flex-col max-w-4xl mx-auto w-full hidden">
+        <div class="mb-4">
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-bold text-white tracking-tight">Stream Clip Studio</h2>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">BETA</span>
+          </div>
+          <p class="text-xs text-slate-400">Smart highlight trimmer & vertical 9:16 auto-cropper for TikTok / Reels.</p>
+        </div>
+
+        <div class="glass-panel p-6 flex flex-col gap-4">
+          <div class="aspect-video bg-black/60 rounded-xl border border-slate-700 flex items-center justify-center text-center p-6">
+            <div>
+              <div class="text-3xl mb-2">✂️</div>
+              <p class="text-sm font-semibold text-slate-300">Upload video to start clipping highlights</p>
+              <p class="text-xs text-slate-500 mt-1">Set In-points and Out-points to build your recap timeline reel.</p>
+              <button onclick="App.switchTab('recap-studio')" class="mt-4 px-4 py-2 rounded-lg btn-gradient-recap text-xs font-semibold">
+                Open in Recap Studio
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW: UNIVERSAL HD VIDEO DOWNLOADER ================= -->
+      <section id="view-rednote" class="view-tab flex-1 flex flex-col max-w-5xl mx-auto w-full hidden">
+        <div class="mb-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold flex items-center gap-1.5">
+              <span>📕</span> RedNote
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-slate-800 text-teal-300 border border-teal-500/30 text-xs font-bold flex items-center gap-1.5">
+              <span>🎵</span> TikTok
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold flex items-center gap-1.5">
+              <span>🔴</span> YouTube
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-bold flex items-center gap-1.5">
+              <span>📘</span> Facebook
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">HD Watermark-Free</span>
+          </div>
+          <h2 class="text-xl font-bold text-white tracking-tight mt-2 flex items-center gap-2">
+            Universal HD Video Downloader (RedNote • TikTok • YouTube • Facebook)
+          </h2>
+          <p class="text-xs text-slate-400">RedNote (小红书), TikTok (Watermark-Free), YouTube Shorts & Facebook Reels/Videos မှ Share Text သို့မဟုတ် Link ကို ထည့်သွင်းပြီး အကောင်းဆုံး HD ရုပ်ထွက်ဖြင့် ဒေါင်းလုဒ်ဆွဲပါ။</p>
+        </div>
+
+        <!-- Download Card -->
+        <div class="glass-panel p-5 mb-5 border-rose-500/30 bg-gradient-to-b from-rose-950/20 to-slate-900 shadow-xl flex flex-col gap-3">
+          <label class="text-xs font-bold text-slate-300">Video Link သို့မဟုတ် Mobile Share Text (RedNote / TikTok / YT / FB):</label>
+          <div class="flex flex-col sm:flex-row items-center gap-2">
+            <div class="relative flex-1 w-full">
+              <input id="rednote-page-url-input" type="text" placeholder="RedNote, TikTok, YouTube Shorts သို့မဟုတ် Facebook Reels Link / Share text ထည့်ပါ..." class="act-input w-full text-xs pr-8 py-2.5">
+              <button onclick="document.getElementById('rednote-page-url-input').value = ''" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs" title="Clear">✕</button>
+            </div>
+            <button id="btn-rednote-page-download" onclick="Tools.handleRednoteStandaloneDownload()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 shrink-0 transition">
+              <span>⬇</span> Download HD Video
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+            <span>✨ Supports: RedNote (xhslink.com), TikTok (vt.tiktok.com), YouTube Shorts & Videos, Facebook Reels/Videos</span>
+            <span class="text-emerald-400 font-semibold flex items-center gap-1">
+              <span>✓</span> Watermark-Free HD
+            </span>
+          </div>
+        </div>
+
+        <!-- Download Status -->
+        <div id="rednote-page-status" class="text-xs text-slate-400 mb-3 min-h-[20px]"></div>
+
+        <!-- Result Box (Shows after download) -->
+        <div id="rednote-page-result" class="hidden glass-panel p-5 border-slate-700 flex flex-col gap-4 shadow-2xl">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-rose-400">Download Complete</span>
+              <h3 id="rednote-result-title" class="text-sm font-bold text-white truncate max-w-md">RedNote HD Video</h3>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <span id="rednote-result-quality" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">HD 720p H.264</span>
+              <span id="rednote-result-size" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px]">17.3 MB</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <!-- Video Preview Player -->
+            <div class="rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center relative border border-slate-800">
+              <video id="rednote-page-video-player" controls class="w-full h-full object-contain"></video>
+            </div>
+
+            <!-- Action Choices & Download Controls -->
+            <div class="flex flex-col gap-3 justify-center">
+              
+              <!-- 1. Save to Device with Audio Mute/Unmute Choice -->
+              <div class="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/80 flex flex-col gap-2 shadow-md">
+                <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <span>📱</span> ဖုန်း/ကွန်ပျူတာထဲ သိမ်းဆည်းရန် (Save to Device):
+                </span>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <!-- Option A: Download with Original Sound -->
+                  <a id="rednote-btn-direct-download" href="#" download class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow transition">
+                    <span>🔊</span> အသံပါဝင် ဒေါင်းလုဒ် (Original Sound)
+                  </a>
+
+                  <!-- Option B: Download Mute (No Audio - Copyright Safe) -->
+                  <button type="button" id="rednote-btn-mute-download" onclick="Tools.downloadRednoteMuted()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow">
+                    <span>🔇</span> အသံပိတ်ပြီး ဒေါင်းလုဒ် (Mute Video)
+                  </button>
+                </div>
+                <p class="text-[10px] text-slate-400">💡 မူပိုင်ခွင့် (Copyright) ကင်းလွတ်စွာ ဇာတ်လမ်းပြောရန် "အသံပိတ်ပြီး ဒေါင်းလုဒ်" ကို ရွေးချယ်နိုင်ပါသည်။</p>
+              </div>
+
+              <!-- 2. Workflow Next Step Choices -->
+              <div class="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/60 flex flex-col gap-2">
+                <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>🎬</span> စတူဒီယိုသို့ ပို့ဆောင်ပြီး တည်းဖြတ်ရန်:
+                </span>
+
+                <div class="flex flex-col gap-1.5">
+                  <!-- Button 1: Send to Subtitle Studio -->
+                  <button type="button" onclick="Tools.sendRednoteToTranscribe()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition">
+                    <span>⚡</span> 1. Subtitles Studio သို့ပို့မည် (စာတန်းထိုး & Timeline ဖမ်းမည်)
+                  </button>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <!-- Button 2: Send to Recap Studio -->
+                    <button type="button" onclick="Tools.sendRednoteToRecap()" class="py-2.5 px-2 rounded-xl bg-rose-600/30 hover:bg-rose-600/50 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+                      <span>🎬</span> 2. Recap Studio
+                    </button>
+
+                    <!-- Button 3: Send to SRT & Translate -->
+                    <button type="button" onclick="Tools.sendRednoteToTranslate()" class="py-2.5 px-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+                      <span>🌐</span> 3. SRT Translate
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW: GEMINI AI API KEY ================= -->
+      <section id="view-gemini-key" class="view-tab flex-1 flex flex-col max-w-4xl mx-auto w-full hidden">
+        <div class="mb-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5">
+              <span>🤖</span> Google Gemini AI
+            </span>
+          </div>
+          <h2 class="text-xl font-bold text-white tracking-tight mt-1 flex items-center gap-2">
+            Gemini AI Key & Neural Storytelling Configuration
+          </h2>
+          <p class="text-xs text-slate-400">တရုတ်ဇာတ်လမ်းပြော စကားလုံးများ၊ Xianxia / Short Drama စကားပြောဟန် (ဂိုဏ်းတူအစ်ကိုကြီး၊ ရေသူမျိုးနွယ်၊ ပါရမီဓာတ်ခံ) နှင့် ဗိုင်းရပ်ခေါင်းစဉ်များကို သဘာဝကျကျ အလိုအလျောက် ပြန်ဆိုပေးမည့် Google Gemini API Key ကို ဤနေရာတွင် ထည့်သွင်းပါ။</p>
+        </div>
+
+        <!-- Key Input Card -->
+        <div class="glass-panel p-5 mb-5 border-indigo-500/40 bg-gradient-to-b from-indigo-950/20 to-slate-900 shadow-xl flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-300">Google Gemini API Key:</label>
+            <div id="gemini-key-status-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-800 border border-slate-700 text-slate-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-500"></span> Checking status...
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-2">
+            <div class="relative flex-1 w-full">
+              <input id="gemini-page-key-input" type="password" placeholder="AIzaSy... Gemini API Key ထည့်ပါ" class="act-input w-full text-xs font-mono pr-10 py-2.5">
+              <button type="button" onclick="Tools.toggleGeminiPageKeyVisibility()" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-white text-xs px-1" title="Show/Hide Key">👁</button>
+            </div>
+            <button id="btn-save-gemini-page" onclick="Tools.saveGeminiKeyFromPage()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25 shrink-0 transition">
+              <span>💾</span> Save Key
+            </button>
+            <button id="btn-test-gemini-page" onclick="Tools.testGeminiConnection()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 shrink-0 transition">
+              <span>⚡</span> Test Connection
+            </button>
+          </div>
+
+          <!-- Diagnostic output box -->
+          <div id="gemini-test-result" class="hidden p-3 rounded-xl text-xs"></div>
+
+          <!-- Free Key Link & Guide -->
+          <div class="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/60 text-xs flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-emerald-400 font-semibold flex items-center gap-1">
+                <span>💡</span> အခမဲ့ Gemini API Key မရှိသေးပါက:
+              </span>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline flex items-center gap-1 font-semibold">
+                <span>🔑</span> Google AI Studio မှ အခမဲ့ရယူမည် (Get Free Key) ↗
+              </a>
+            </div>
+            <p class="text-slate-400 text-[11px] leading-relaxed">
+              Google AI Studio သို့ သွားရောက်ပြီး "Get API key" -> "Create API key" ကို နှိပ်ကာ အခမဲ့ ကူးယူနိုင်ပါသည်။ Gemini API Key ထည့်ထားပါက မည်သည့် ကန့်သတ်ချက်မှ မရှိဘဲ မြန်မာစကားပြော ရုပ်ရှင်ဇာတ်ညွှန်းများ၊ SRT စာတန်းထိုးများကို စက္ကန့်မလွဲ ဘာသာပြန်နိုင်မည် ဖြစ်ပါသည်။
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 6: TRANSLATE (Timeline Tracking & Natural Burmese) ================= -->
+      <section id="view-translate" class="view-tab flex-1 flex flex-col max-w-5xl mx-auto w-full hidden">
+        <div class="mb-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5">
+              <span>🌐</span> Exact Timeline SRT & Script Translator
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">Millisecond Precision</span>
+          </div>
+          <h2 class="text-xl font-bold text-white tracking-tight mt-1 flex items-center gap-2">
+            Recap Translation Engine & Timeline Tracker
+          </h2>
+          <p class="text-xs text-slate-400">တရုတ် SRT စာတန်းထိုးများကို Timeline စက္ကန့်မလွဲ (00:00:00,000) တိကျစွာ ထိန်းသိမ်းပြီး ရုပ်ရှင်ဇာတ်လမ်းပြော စကားပြောဟန် (ဂိုဏ်းတူအစ်ကိုကြီး၊ ရေသူမျိုးနွယ်၊ ပါရမီဓာတ်ခံ) ဖြင့် မြန်မာဘာသာသို့ ပြန်ဆိုပေးပါသည်။</p>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
+          <button id="tab-btn-translate-srt" onclick="document.getElementById('translate-mode-srt').classList.remove('hidden'); document.getElementById('translate-mode-text').classList.add('hidden'); this.className='px-3.5 py-1.5 rounded-lg bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold'; document.getElementById('tab-btn-translate-text').className='px-3.5 py-1.5 rounded-lg bg-slate-800/60 text-slate-400 text-xs font-medium hover:text-white';" class="px-3.5 py-1.5 rounded-lg bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
+            ⏱ Timeline Subtitles (.SRT) Mode
+          </button>
+          <button id="tab-btn-translate-text" onclick="document.getElementById('translate-mode-text').classList.remove('hidden'); document.getElementById('translate-mode-srt').classList.add('hidden'); this.className='px-3.5 py-1.5 rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-bold'; document.getElementById('tab-btn-translate-srt').className='px-3.5 py-1.5 rounded-lg bg-slate-800/60 text-slate-400 text-xs font-medium hover:text-white';" class="px-3.5 py-1.5 rounded-lg bg-slate-800/60 text-slate-400 text-xs font-medium hover:text-white">
+            📝 Synopsis & Script Text Mode
+          </button>
+        </div>
+
+        <!-- MODE 1: SRT TIMELINE TRANSLATE -->
+        <div id="translate-mode-srt" class="flex flex-col gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Left: Source SRT Input -->
+            <div class="glass-panel p-4 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-300">Original Chinese / English .SRT:</label>
+                <div class="flex items-center gap-1.5">
+                  <button onclick="document.getElementById('translate-srt-file-input').click()" class="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+                    <span>📁</span> Upload .SRT
+                  </button>
+                  <input id="translate-srt-file-input" type="file" accept=".srt,.vtt,.txt" class="hidden" onchange="Tools.handleTranslateSrtFileUpload(this.files[0])">
+                </div>
+              </div>
+
+              <textarea id="translate-srt-input-text" rows="12" placeholder="1
+00:00:00,000 --> 00:00:01,080
+大师兄竟然是鲛人。
+
+2
+00:00:01,080 --> 00:00:02,040
+为了救我... 误中了魔修的剧毒。" class="act-input w-full text-xs leading-relaxed font-mono"></textarea>
+
+              <button id="btn-run-srt-translate" onclick="Tools.runSrtTimelineTranslate()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition">
+                <span>⚡</span> Translate with Exact Timeline & Natural Burmese
+              </button>
+            </div>
+
+            <!-- Right: Burmese SRT Output -->
+            <div class="glass-panel p-4 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-emerald-400">Burmese SRT Output (စက္ကန့်မလွဲ မြန်မာစာတန်းထိုး):</label>
+                <div class="flex items-center gap-2">
+                  <a id="btn-download-translated-srt" href="#" download="burmese_translated.srt" class="hidden text-xs text-blue-400 hover:underline flex items-center gap-1 font-semibold">
+                    <span>⬇</span> Download .SRT
+                  </a>
+                  <button onclick="Tools.sendTranslateSrtToStudio()" class="text-xs text-amber-400 hover:underline flex items-center gap-1 font-semibold">
+                    <span>🎬</span> Send to Subtitle Studio
+                  </button>
+                </div>
+              </div>
+
+              <textarea id="translate-srt-output-text" rows="12" placeholder="1
+00:00:00,000 --> 00:00:01,080
+ဂိုဏ်းတူအစ်ကိုကြီးက ရေသူမျိုးနွယ် (ကျောင်းရန်) တစ်ယောက်ပါ။
+
+2
+00:00:01,080 --> 00:00:02,040
+ကျွန်မကို ကယ်တင်ရင်းနဲ့... မိစ္ဆာသတ္တဝါရဲ့ အဆိပ်မိသွားခဲ့တာ။" class="act-input w-full text-xs leading-relaxed font-mono"></textarea>
+
+              <div class="flex items-center justify-between text-[11px] text-slate-400">
+                <span>✓ Preserves 00:00:00,000 exact millisecond timing</span>
+                <span class="text-emerald-300">Natural Spoken Particles (စကားပြောဟန်)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Table of Translated Segments -->
+          <div id="translate-srt-preview-box" class="hidden glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl flex flex-col">
+            <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between">
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>📋</span> Segment Breakdown & Timeline Monitor
+              </h4>
+              <span class="text-[11px] text-slate-400">Side-by-side verification</span>
+            </div>
+            <div class="max-h-72 overflow-y-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-800 text-[11px] font-semibold text-slate-400 bg-slate-800/40">
+                    <th class="p-2 w-12">#</th>
+                    <th class="p-2 w-48">Timestamp (စက္ကန့်)</th>
+                    <th class="p-2">Original Text (မူရင်း)</th>
+                    <th class="p-2">Natural Burmese Recap (မြန်မာစကားပြော)</th>
+                  </tr>
+                </thead>
+                <tbody id="translate-srt-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODE 2: PLAIN TEXT RECAP TRANSLATE -->
+        <div id="translate-mode-text" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass-panel p-4 flex flex-col gap-3">
+            <label class="text-xs font-bold text-slate-300">Original Script / Synopsis (English, Chinese, Thai...)</label>
+            <textarea id="translate-input-text" rows="12" placeholder="Paste foreign movie plot or subtitles here..." class="act-input w-full text-xs leading-relaxed"></textarea>
+            <button id="btn-run-translate" onclick="Tools.runTranslate()" class="w-full py-2.5 rounded-xl btn-gradient-recap text-xs font-semibold flex items-center justify-center gap-2">
+              <span>🌐</span> Translate to Burmese Recap Style
+            </button>
+          </div>
+
+          <div class="glass-panel p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-blue-400">Burmese Recap Narration Output (မြန်မာ ဇာတ်ပြော)</label>
+              <button onclick="Tools.sendTranslatedToStudio()" class="text-xs text-emerald-400 hover:underline">
+                🎬 Send to Recap Studio
+              </button>
+            </div>
+            <textarea id="translate-output-text" rows="12" placeholder="မြန်မာစကားပြော ရုပ်ရှင်ဇာတ်ညွှန်း ဤနေရာတွင် ထွက်ရှိလာမည်..." class="act-input w-full text-xs leading-relaxed font-sans"></textarea>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 7: PROJECTS ================= -->
+      <section id="view-projects" class="view-tab flex-1 flex flex-col max-w-5xl mx-auto w-full hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white tracking-tight">Recap Projects</h2>
+            <p class="text-xs text-slate-400">Manage, preview, and download your rendered movie recaps.</p>
+          </div>
+          <button onclick="App.switchTab('recap-studio')" class="px-4 py-2 rounded-xl btn-gradient-recap text-xs font-semibold flex items-center gap-1.5 shadow-md">
+            + New Project
+          </button>
+        </div>
+
+        <!-- Projects Grid -->
+        <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Filled by Projects.render() -->
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 8: DASHBOARD ================= -->
+      <section id="view-dashboard" class="view-tab flex-1 flex flex-col max-w-5xl mx-auto w-full hidden">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-white tracking-tight">Studio Dashboard</h2>
+          <p class="text-xs text-slate-400">Welcome to ACT RECAP - High-speed Burmese Movie Recap Workstation.</p>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="glass-panel p-5">
+            <span class="text-xs text-slate-400 font-medium">Total Projects</span>
+            <div id="stat-total-projects" class="text-2xl font-bold text-white mt-1">0</div>
+            <span class="text-[11px] text-blue-400 mt-1 block">In local storage</span>
+          </div>
+
+          <div class="glass-panel p-5">
+            <span class="text-xs text-slate-400 font-medium">Rendered Recaps</span>
+            <div id="stat-rendered-recaps" class="text-2xl font-bold text-emerald-400 mt-1">0</div>
+            <span class="text-[11px] text-slate-400 mt-1 block">Ready for upload & Telegram</span>
+          </div>
+
+          <div class="glass-panel p-5">
+            <span class="text-xs text-slate-400 font-medium">Audio Synthesized</span>
+            <div id="stat-audio-count" class="text-2xl font-bold text-purple-400 mt-1">0</div>
+            <span class="text-[11px] text-slate-400 mt-1 block">Burmese Edge TTS</span>
+          </div>
+        </div>
+
+        <!-- Quick Access Actions -->
+        <div class="glass-panel p-6 flex flex-col gap-4">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Quick Actions</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <button onclick="App.switchTab('script-assistant')" class="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-750 border border-slate-700/60 text-left transition group">
+              <div class="text-xl mb-1 text-blue-400">💬</div>
+              <span class="text-xs font-bold text-white group-hover:text-blue-300 block">Script Assistant</span>
+              <span class="text-[11px] text-slate-400">Write viral movie scripts</span>
+            </button>
+
+            <button onclick="App.switchTab('recap-studio')" class="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-750 border border-slate-700/60 text-left transition group">
+              <div class="text-xl mb-1 text-emerald-400">🎬</div>
+              <span class="text-xs font-bold text-white group-hover:text-emerald-300 block">Recap Studio</span>
+              <span class="text-[11px] text-slate-400">Render complete video</span>
+            </button>
+
+            <button onclick="App.switchTab('free-voice')" class="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-750 border border-slate-700/60 text-left transition group">
+              <div class="text-xl mb-1 text-purple-400">🎙</div>
+              <span class="text-xs font-bold text-white group-hover:text-purple-300 block">Free Voice</span>
+              <span class="text-[11px] text-slate-400">Burmese TTS narration</span>
+            </button>
+
+            <button onclick="App.switchTab('settings')" class="p-4 rounded-xl bg-slate-800/60 hover:bg-slate-750 border border-slate-700/60 text-left transition group">
+              <div class="text-xl mb-1 text-cyan-400">⚙️</div>
+              <span class="text-xs font-bold text-white group-hover:text-cyan-300 block">Telegram & API</span>
+              <span class="text-[11px] text-slate-400">Configure delivery</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= VIEW 9: SETTINGS ================= -->
+      <section id="view-settings" class="view-tab flex-1 flex flex-col max-w-4xl mx-auto w-full hidden">
+        <div class="mb-4">
+          <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <span>⚙️</span> Studio Settings & Integrations
+          </h2>
+          <p class="text-xs text-slate-400">Configure AI models, Telegram Bot delivery, and default studio options.</p>
+        </div>
+
+        <div class="glass-panel p-6 flex flex-col gap-5">
+          <!-- Telegram Integration (Screenshot 3 & 4) -->
+          <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 flex flex-col gap-3">
+            <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+              <span>Telegram Delivery Configuration</span>
+            </div>
+            <p class="text-xs text-slate-400">Render ပြီးတိုင်း ဗီဒီယိုနှင့် အသံဖိုင်များကို သင့် Telegram PM သို့ တိုက်ရိုက် ပေးပို့နိုင်ပါသည်။</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Telegram Bot Token (e.g. 123456:ABC...)</label>
+                <input id="setting-tg-token" type="text" placeholder="From @BotFather" class="act-input w-full text-xs">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Telegram Chat ID (Personal or Channel)</label>
+                <input id="setting-tg-chat-id" type="text" placeholder="From @userinfobot" class="act-input w-full text-xs">
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input id="setting-auto-tg" type="checkbox" checked class="rounded border-slate-700">
+                <span>Render ပြီးသည်နှင့် အလိုအလျောက် ပေးပို့မည် (Auto-send upon completion)</span>
+              </label>
+
+              <button id="btn-test-tg-settings" class="px-3 py-1.5 rounded-lg bg-sky-600/30 hover:bg-sky-600/50 text-sky-300 border border-sky-500/40 text-xs font-semibold transition">
+                Test Connection
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Model Keys -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Google Gemini API Key (Optional)</label>
+              <input id="setting-gemini-key" type="password" placeholder="AIzaSy..." class="act-input w-full text-xs">
+              <span class="text-[10px] text-slate-500 mt-1 block">Free key available at <a href="https://aistudio.google.com" target="_blank" class="text-blue-400 hover:underline">Google AI Studio</a>. If left blank, ACT built-in offline engine will be used.</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">OpenRouter API Key (Optional)</label>
+              <input id="setting-or-key" type="password" placeholder="sk-or-v1-..." class="act-input w-full text-xs">
+              <span class="text-[10px] text-slate-500 mt-1 block">Optional secondary LLM provider.</span>
+            </div>
+          </div>
+
+          <!-- Default Preferences -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Default Burmese Voice</label>
+              <select id="setting-default-voice" class="act-select w-full text-xs">
+                <option value="my-MM-ThihaNeural">Thiha (သီဟ - Male)</option>
+                <option value="my-MM-NilarNeural">Nilar (နီလာ - Female)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Default Watermark Text</label>
+              <input id="setting-wm-text" type="text" value="@actrecap" class="act-input w-full text-xs">
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800 flex justify-end">
+            <button id="btn-save-settings" class="px-6 py-2.5 rounded-xl btn-gradient-recap text-xs font-bold shadow-md transition">
+              💾 Save Configurations
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- RENDER PROGRESS MODAL -->
+  <div id="render-progress-modal" class="modal-overlay fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-panel p-6 max-w-lg w-full rounded-2xl border border-blue-500/40 shadow-2xl animate-in">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="animate-spin text-base">⚡</span>
+          <span>Rendering Movie Recap</span>
+        </h3>
+        <span id="render-modal-pct" class="text-xs font-bold text-blue-400">0%</span>
+      </div>
+
+      <p id="render-modal-title" class="text-xs text-slate-300 font-medium mb-3 truncate"></p>
+
+      <!-- Progress Bar -->
+      <div class="w-full h-3 rounded-full bg-slate-800 overflow-hidden mb-2 p-0.5 border border-slate-700">
+        <div id="render-modal-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 w-0 transition-all duration-300"></div>
+      </div>
+
+      <p id="render-modal-step" class="text-xs text-slate-400 animate-pulse">Initializing pipeline...</p>
+
+      <!-- Rendered video container slot -->
+      <div id="render-modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- VIDEO PREVIEW MODAL -->
+  <div id="video-preview-modal" class="modal-overlay fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-panel p-4 max-w-3xl w-full rounded-2xl border border-slate-700 shadow-2xl flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <h3 id="preview-modal-title" class="text-sm font-bold text-white truncate">Movie Recap</h3>
+        <button class="btn-close-modal text-slate-400 hover:text-white text-lg p-1">✕</button>
+      </div>
+
+      <video id="preview-modal-video" controls class="w-full rounded-xl bg-black max-h-[70vh]"></video>
+
+      <div class="flex items-center justify-between pt-1">
+        <a id="preview-modal-download" href="#" download class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition flex items-center gap-1.5">
+          ⬇ Download MP4 Video
+        </a>
+        <button class="btn-close-modal px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs hover:bg-slate-700 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPGRADE PLAN MODAL (Screenshot 4) -->
+  <div id="upgrade-plan-modal" class="modal-overlay fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-panel p-6 max-w-md w-full rounded-2xl border border-purple-500/40 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>👑</span> ACT RECAP PRO Plan
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div class="p-4 rounded-xl bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-purple-500/30">
+        <span class="text-xs text-purple-300 font-semibold block">You are on:</span>
+        <h4 class="text-lg font-extrabold text-white mt-0.5">Local Unlimited License</h4>
+        <p class="text-xs text-slate-300 mt-1">Full access to Edge TTS Burmese voices, FFmpeg video rendering, anti-copyright filters, and Telegram Bot push with 0 limitations!</p>
+      </div>
+
+      <ul class="text-xs text-slate-300 flex flex-col gap-2">
+        <li class="flex items-center gap-2">✓ Unlimited Burmese Edge TTS Voice synthesis</li>
+        <li class="flex items-center gap-2">✓ 1080p & 9:16 Vertical Video Render</li>
+        <li class="flex items-center gap-2">✓ Automatic Telegram PM video delivery</li>
+        <li class="flex items-center gap-2">✓ Custom Watermarks & Anti-Copyright speed</li>
+      </ul>
+
+      <button class="btn-close-modal w-full py-2.5 rounded-xl btn-gradient-recap text-xs font-bold">
+        Got it! Continue Editing
+      </button>
+    </div>
+  </div>
+
+  <!-- TELEGRAM CONNECT MODAL -->
+  <div id="telegram-connect-modal" class="modal-overlay fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-panel p-6 max-w-md w-full rounded-2xl border border-sky-500/40 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2 text-sky-400">
+          <span>✈</span> Telegram Account ချိတ်ဆက်ရန်
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Telegram တွင် သင့် Bot သို့မဟုတ် Channel ID ကို ထည့်သွင်းထားပါက Render ပြီးဆုံးသည်နှင့် ဗီဒီယိုများကို သင့်ဖုန်းဆီသို့ တိုက်ရိုက် ပို့ပေးပါမည်။
+      </p>
+
+      <button onclick="App.switchTab('settings'); document.getElementById('telegram-connect-modal').classList.add('hidden');" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition">
+        Settings တွင် Token ထည့်သွင်းရန် သွားမည်
+      </button>
+    </div>
+  </div>
+
+  <!-- LICENSE ACTIVATION MODAL (1 Device = 1 License Key Enforcement) -->
+  <div id="license-activation-modal" class="fixed inset-0 bg-[#07090e]/95 backdrop-blur-xl flex items-center justify-center p-4 z-50 hidden">
+    <div class="glass-panel p-6 sm:p-8 max-w-md w-full rounded-3xl border border-amber-500/40 shadow-2xl shadow-amber-500/10 flex flex-col gap-5 text-center relative overflow-hidden bg-gradient-to-b from-[#161c2e] to-[#0c101d]">
+      
+      <!-- Top Glow / Accent -->
+      <div class="absolute -top-16 -left-16 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-16 -right-16 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Icon & Header -->
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-amber-500/30 text-2xl text-white">
+          <span>🔑</span>
+        </div>
+        <h2 class="text-xl font-extrabold text-white tracking-tight mt-1">A.W.N Movie Recap Studio</h2>
+        <p class="text-xs text-slate-400">Device License Activation • စက်အသုံးပြုခွင့် လိုင်စင်ကီး ထည့်သွင်းပါ</p>
+      </div>
+
+      <!-- Device Binding Notice -->
+      <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-left flex flex-col gap-1.5 text-xs">
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <span class="flex items-center gap-1 font-semibold text-slate-300">
+            <span>📱</span> သင့်လက်ရှိ Device ID:
+          </span>
+          <button type="button" onclick="LicenseManager.copyDeviceId()" class="text-amber-400 hover:underline flex items-center gap-1">
+            <span>📋</span> Copy ID
+          </button>
+        </div>
+        <div class="font-mono text-emerald-400 font-bold tracking-wider awn-device-id-display text-xs break-all">
+          Generating Device ID...
+        </div>
+        <div class="text-[10px] text-amber-300/90 pt-1 border-t border-slate-700/50 flex items-center gap-1">
+          <span>🔒</span> လိုင်စင်ကီးတစ်ခုလျှင် စက်တစ်လုံးတည်း (1 Device Only) သာ ချိတ်ဆက်အသုံးပြုနိုင်ပါသည်။
+        </div>
+      </div>
+
+      <!-- Activation Form -->
+      <form onsubmit="LicenseManager.handleActivationSubmit(event)" class="flex flex-col gap-3 text-left">
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">လိုင်စင်ကီး ထည့်ပါ (License Key):</label>
+          <input id="activation-key-input" type="text" placeholder="AWN-XXXX-XXXX-XXXX" class="act-input w-full text-center font-mono font-bold tracking-widest text-sm uppercase py-3 border-amber-500/50 bg-slate-900/80 text-white placeholder-slate-600 focus:border-amber-400">
+        </div>
+
+        <div id="activation-error-msg" class="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs hidden leading-relaxed"></div>
+
+        <button id="btn-activate-license" type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white text-xs font-bold shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition transform active:scale-98">
+          <span>🚀</span> Activate Device (အသုံးပြုခွင့် ဖွင့်မည်)
+        </button>
+      </form>
+
+      <div class="text-[11px] text-slate-400">
+        လိုင်စင်ကီး ရယူလိုပါက Admin ထံ ဆက်သွယ်ပါ (Master VIP Key: <span class="font-mono text-amber-300 font-bold">AWN-VIP-PRO-2026</span>)
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION DOCK (Native Android App UI) -->
+  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0d111a]/95 backdrop-blur-xl border-t border-slate-800/90 px-1 py-1 flex items-center justify-around shadow-2xl safe-area-bottom">
+    <button type="button" onclick="App.switchTab('transcribe')" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-blue-400 font-bold transition active:scale-95" data-tab="transcribe">
+      <span class="text-base leading-none">⚡</span>
+      <span class="text-[10px] font-medium mt-1">Studio</span>
+    </button>
+    
+    <button type="button" onclick="App.switchTab('rednote')" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-slate-400 transition active:scale-95" data-tab="rednote">
+      <span class="text-base leading-none">📥</span>
+      <span class="text-[10px] font-medium mt-1">Download</span>
+    </button>
+
+    <button type="button" onclick="App.switchTab('translate')" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-slate-400 transition active:scale-95" data-tab="translate">
+      <span class="text-base leading-none">🌐</span>
+      <span class="text-[10px] font-medium mt-1">Translate</span>
+    </button>
+
+    <button type="button" onclick="App.switchTab('gemini-key')" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-slate-400 transition active:scale-95" data-tab="gemini-key">
+      <span class="text-base leading-none">🤖</span>
+      <span class="text-[10px] font-medium mt-1">Gemini AI</span>
+    </button>
+
+    <button type="button" onclick="App.toggleSidebar()" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-slate-400 transition active:scale-95">
+      <span class="text-base leading-none">☰</span>
+      <span class="text-[10px] font-medium mt-1">Menu</span>
+    </button>
+  </nav>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-16 md:bottom-5 right-5 flex flex-col gap-2 z-50 pointer-events-none"></div>
+
+  <!-- SCRIPTS -->
+  <script src="/static/js/api.js?v=3.5.0"></script>
+  <script src="/static/js/license.js?v=3.5.0"></script>
+  <script src="/static/js/script_assistant.js?v=3.5.0"></script>
+  <script src="/static/js/recap_studio.js?v=3.5.0"></script>
+  <script src="/static/js/free_voice.js?v=3.5.0"></script>
+  <script src="/static/js/projects.js?v=3.5.0"></script>
+  <script src="/static/js/settings.js?v=3.5.0"></script>
+  <script src="/static/js/tools.js?v=3.5.0"></script>
+  <script src="/static/js/app.js?v=3.5.0"></script>
+</body>
+</html>

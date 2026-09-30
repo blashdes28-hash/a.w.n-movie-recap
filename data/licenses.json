@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "licenses": {
+    "AWN-VIP-PRO-2026": {
+      "key": "AWN-VIP-PRO-2026",
+      "plan": "Lifetime VIP (Admin Master)",
+      "created_at": "2026-09-29T11:25:05.682127+00:00",
+      "expires_at": null,
+      "status": "active",
+      "bound_device_id": "DEV-F4M9UWV1MUMLIZ0Q",
+      "bound_device_info": "PC (Win32)",
+      "activated_at": "2026-09-29T11:31:51.128996+00:00",
+      "last_seen_at": "2026-09-29T11:44:44.652525+00:00",
+      "notes": "Admin Master License"
+    },
+    "AWN-KFY6-UVN7-449E": {
+      "key": "AWN-KFY6-UVN7-449E",
+      "plan": "Trial 1 Day VIP",
+      "created_at": "2026-09-30T01:17:38.718895+00:00",
+      "expires_at": "2026-10-01T01:18:17.848597+00:00",
+      "duration_days": 1,
+      "status": "active",
+      "bound_device_id": "DEV-64D5BAC1B68B44C3",
+      "bound_device_info": "PC (Linux armv81)",
+      "activated_at": "2026-09-30T01:18:17.848584+00:00",
+      "last_seen_at": "2026-09-30T02:29:33.998018+00:00",
+      "notes": ""
+    }
+  }
+}
