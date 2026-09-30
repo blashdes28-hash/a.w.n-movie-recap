@@ -112,7 +112,7 @@ const AuthManager = {
     if (btn) btn.innerHTML = '<span class="animate-spin">⏳</span> Testing key...';
 
     try {
-      const res = await fetch('/api/gemini/test-key', {
+      const res = await fetch('/api/gemini/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gemini_api_key: key })

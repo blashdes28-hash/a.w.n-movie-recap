@@ -9,7 +9,8 @@ const LicenseManager = {
   init() {
     this.currentDeviceId = this.getOrCreateDeviceId();
     this.updateDeviceDisplay();
-    this.verifyDeviceLicense();
+    // Use Google Auth flow instead of license key
+    this.verifyWithGoogleAuth();
   },
 
   getOrCreateDeviceId() {
@@ -30,6 +31,20 @@ const LicenseManager = {
     devDisplays.forEach(el => {
       el.textContent = this.currentDeviceId;
     });
+  },
+
+  verifyWithGoogleAuth() {
+    const activationModal = document.getElementById('license-activation-modal');
+    // Let AuthManager handle sign-in check
+    const alreadySignedIn = AuthManager.init();
+    if (alreadySignedIn) {
+      // User is signed in and has key - unlock immediately
+      this.isUnlocked = true;
+      if (activationModal) activationModal.classList.add('hidden');
+    } else {
+      // Show sign-in modal
+      if (activationModal) activationModal.classList.remove('hidden');
+    }
   },
 
   async verifyDeviceLicense() {
