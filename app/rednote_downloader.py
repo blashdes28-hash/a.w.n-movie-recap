@@ -15,9 +15,16 @@ from app.video_renderer import FFMPEG_EXE
 try:
     if FFMPEG_EXE and Path(FFMPEG_EXE).exists():
         ffmpeg_dir = Path(FFMPEG_EXE).parent
-        standard_ffmpeg = ffmpeg_dir / "ffmpeg.exe"
-        if not standard_ffmpeg.exists():
-            shutil.copyfile(FFMPEG_EXE, standard_ffmpeg)
+        standard_ffmpeg_exe = ffmpeg_dir / "ffmpeg.exe"
+        standard_ffmpeg_bin = ffmpeg_dir / "ffmpeg"
+        if not standard_ffmpeg_exe.exists():
+            shutil.copyfile(FFMPEG_EXE, standard_ffmpeg_exe)
+        if not standard_ffmpeg_bin.exists():
+            shutil.copyfile(FFMPEG_EXE, standard_ffmpeg_bin)
+            try:
+                standard_ffmpeg_bin.chmod(0o755)
+            except Exception:
+                pass
 except Exception as _fe:
     print(f"Notice: ffmpeg setup check: {_fe}")
 
@@ -437,12 +444,11 @@ def download_rednote_hd_video(
 
     # 3. Universal yt-dlp with GUARANTEED Audio Merging (YouTube, Facebook, Douyin, TikTok fallback, RedNote fallback)
     if not downloaded:
-        ffmpeg_dir = str(Path(FFMPEG_EXE).parent)
         ydl_opts = {
             "format": "bestvideo*+bestaudio/best[ext=mp4]/best",
             "outtmpl": str(target_path),
             "merge_output_format": "mp4",
-            "ffmpeg_location": ffmpeg_dir,
+            "ffmpeg_location": str(FFMPEG_EXE) if FFMPEG_EXE else None,
             "quiet": True,
             "no_warnings": True,
             "nocheckcertificate": True,
