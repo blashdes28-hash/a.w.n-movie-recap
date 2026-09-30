@@ -397,10 +397,13 @@ def transcribe_and_translate_video(
     """
     Full pipeline:
     1. Extracts audio from video
-    2. Transcribes Chinese speech with precise timestamps using faster-whisper
+    2. Transcribes Chinese speech using Gemini (Whisper fallback removed)
     3. Translates each segment to natural colloquial Burmese while strictly preserving timestamps
     4. Generates Burmese SRT, Chinese SRT, and Bilingual SRT
     """
+    if not gemini_key or not gemini_key.strip():
+        raise RuntimeError("Gemini API key is required for transcription. Local Whisper has been disabled.")
+
     output_dir.mkdir(parents=True, exist_ok=True)
     job_uid = uuid.uuid4().hex[:10]
     
@@ -410,45 +413,33 @@ def transcribe_and_translate_video(
     if not extracted or not wav_path.exists():
         raise RuntimeError("Failed to extract audio track from video.")
 
-    # 2. Transcribe with Whisper (beam_size=2 for 3x faster inference)
-    model = get_whisper_model(whisper_model_size)
-    segments_gen, info = model.transcribe(
-        str(wav_path),
-        language=source_lang if source_lang != "auto" else None,
-        beam_size=2,
-        vad_filter=True,
-        vad_parameters=dict(min_silence_duration_ms=400)
-    )
-
-    segments = []
-    idx = 1
-    for seg in segments_gen:
-        zh_text = seg.text.strip()
-        if not zh_text:
-            continue
-        
-        start_sec = seg.start
-        end_sec = seg.end
-
-        segments.append({
-            "index": idx,
-            "start": round(start_sec, 3),
-            "end": round(end_sec, 3),
-            "start_str": format_srt_time(start_sec),
-            "end_str": format_srt_time(end_sec),
-            "vtt_start": format_vtt_time(start_sec),
-            "vtt_end": format_vtt_time(end_sec),
-            "zh_text": zh_text,
-            "my_text": "",
-            "en_text": ""
-        })
-        idx += 1
-
-    # Cleanup temp wav
+    # 2. Transcribe with Gemini
+    import google.generativeai as genai
+    genai.configure(api_key=gemini_key.strip())
+    
     try:
-        wav_path.unlink()
-    except Exception:
-        pass
+        audio_file = genai.upload_file(path=str(wav_path))
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        prompt = "Transcribe the following audio. Return the exact response in SRT format. Only output the SRT content, no markdown blocks."
+        response = model.generate_content([prompt, audio_file])
+        srt_content = response.text.strip()
+        if srt_content.startswith("```srt"):
+            srt_content = srt_content[6:]
+        if srt_content.startswith("```"):
+            srt_content = srt_content[3:]
+        if srt_content.endswith("```"):
+            srt_content = srt_content[:-3]
+        srt_content = srt_content.strip()
+    finally:
+        try:
+            wav_path.unlink()
+        except Exception:
+            pass
+
+    # Parse SRT into segments
+    segments = parse_srt_string(srt_content)
+    if not segments:
+        raise RuntimeError("Failed to parse SRT from Gemini response.")
 
     # 3. Natural Translation into Burmese Recap Style and English Translation
     if (gemini_key and gemini_key.strip()) or (openrouter_key and openrouter_key.strip()):
@@ -491,8 +482,8 @@ def transcribe_and_translate_video(
 
     return {
         "job_id": job_uid,
-        "language": info.language,
-        "duration": info.duration,
+        "language": source_lang,
+        "duration": 0,
         "segments": segments,
         "burmese_srt": burmese_srt_file,
         "chinese_srt": chinese_srt_file,

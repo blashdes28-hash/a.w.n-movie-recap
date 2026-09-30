@@ -147,6 +147,7 @@ class TranscribeExistingVideoRequest(BaseModel):
     video_file: str
     source_lang: Optional[str] = "zh"
     whisper_model: Optional[str] = "base"
+    gemini_api_key: Optional[str] = None
 
 class RenderRequest(BaseModel):
     project_id: str
@@ -421,7 +422,8 @@ def generate_caption_endpoint(req: CaptionGenerateRequest):
 async def transcribe_video_endpoint(
     file: UploadFile = File(...),
     source_lang: str = Form("zh"),
-    whisper_model: str = Form("base")
+    whisper_model: str = Form("base"),
+    gemini_api_key: str = Form(None)
 ):
     try:
         # Save uploaded video
@@ -432,14 +434,15 @@ async def transcribe_video_endpoint(
             shutil.copyfileobj(file.file, buffer)
 
         config = load_config()
-        gemini_key = config.get("gemini_api_key")
+        # Use provided key, or fallback to config
+        active_gemini_key = gemini_api_key or config.get("gemini_api_key")
         openrouter_key = config.get("openrouter_api_key")
 
         result = transcribe_and_translate_video(
             video_path=saved_path,
             output_dir=OUTPUT_DIR,
             source_lang=source_lang,
-            gemini_key=gemini_key,
+            gemini_key=active_gemini_key,
             openrouter_key=openrouter_key,
             whisper_model_size=whisper_model
         )
@@ -459,14 +462,14 @@ def transcribe_existing_video_endpoint(req: TranscribeExistingVideoRequest):
             raise HTTPException(status_code=404, detail="Video file not found in uploads")
 
         config = load_config()
-        gemini_key = config.get("gemini_api_key")
+        active_gemini_key = req.gemini_api_key or config.get("gemini_api_key")
         openrouter_key = config.get("openrouter_api_key")
 
         result = transcribe_and_translate_video(
             video_path=video_path,
             output_dir=OUTPUT_DIR,
             source_lang=req.source_lang or "zh",
-            gemini_key=gemini_key,
+            gemini_key=active_gemini_key,
             openrouter_key=openrouter_key,
             whisper_model_size=req.whisper_model or "base"
         )

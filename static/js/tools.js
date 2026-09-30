@@ -1,4 +1,4 @@
-// Transcribe, Chinese-to-Burmese Timeline Studio, and Translate Tools
+﻿// Transcribe, Chinese-to-Burmese Timeline Studio, and Translate Tools
 const Tools = {
   currentSegments: [],
   activeVideoUrl: null,
@@ -57,6 +57,11 @@ const Tools = {
     }
 
     try {
+            if (window.currentUserEmail) {
+         localStorage.setItem('gemini_key_' + window.currentUserEmail, key);
+      } else {
+         localStorage.setItem('gemini_key_global', key);
+      }
       await API.saveSettings({ gemini_api_key: key });
       App.showToast('✅ Gemini API Key သိမ်းဆည်းပြီးပါပြီ! AI စကားပြောဟန် စနစ် အသုံးပြုနိုင်ပါပြီ။', 'success');
       await this.loadAiStatus();
@@ -345,7 +350,14 @@ const Tools = {
     }
 
     try {
-      const res = await API.transcribeExistingVideo(videoFilename, srcLang, whisperModel);
+            let geminiApiKey = '';
+      if (window.currentUserEmail) {
+         geminiApiKey = localStorage.getItem('gemini_key_' + window.currentUserEmail) || '';
+      }
+      if (!geminiApiKey) {
+         geminiApiKey = localStorage.getItem('gemini_key_global') || '';
+      }
+      const res = await API.transcribeExistingVideo(videoFilename, srcLang, whisperModel, geminiApiKey);
       this.currentSegments = res.segments || [];
       this.renderTimelineTable();
 
@@ -906,7 +918,14 @@ const Tools = {
     }
 
     try {
-      const res = await API.transcribeVideo(file, srcLang, whisperModel);
+            let geminiApiKey = '';
+      if (window.currentUserEmail) {
+         geminiApiKey = localStorage.getItem('gemini_key_' + window.currentUserEmail) || '';
+      }
+      if (!geminiApiKey) {
+         geminiApiKey = localStorage.getItem('gemini_key_global') || '';
+      }
+      const res = await API.transcribeVideo(file, srcLang, whisperModel, geminiApiKey);
       this.currentSegments = res.segments || [];
       this.uploadedVideoFilename = res.video_file || null;
 
@@ -1688,7 +1707,19 @@ const Tools = {
   // --- Gemini Key Page Methods ---
   async loadGeminiKeyForPage() {
     try {
-      const status = await API.getSystemStatus();
+              const status = await API.getSystemStatus();
+        const email = window.currentUserEmail;
+        let localKey = '';
+        if (email) {
+            localKey = localStorage.getItem('gemini_key_' + email) || '';
+        }
+        if (!localKey) {
+            localKey = localStorage.getItem('gemini_key_global') || '';
+        }
+        const inputEl = document.getElementById('gemini-page-key-input');
+        if (inputEl && !inputEl.value && localKey) {
+            inputEl.value = localKey;
+        }
       const input = document.getElementById('gemini-page-key-input');
       const badge = document.getElementById('gemini-key-status-badge');
       if (status.gemini_api_configured) {
@@ -1723,6 +1754,11 @@ const Tools = {
       return;
     }
     try {
+            if (window.currentUserEmail) {
+         localStorage.setItem('gemini_key_' + window.currentUserEmail, key);
+      } else {
+         localStorage.setItem('gemini_key_global', key);
+      }
       await API.saveSettings({ gemini_api_key: key });
       App.showToast('✅ Gemini API Key သိမ်းဆည်းပြီးပါပြီ!', 'success');
       this.loadGeminiKeyForPage();
@@ -1866,3 +1902,7 @@ const Tools = {
       .replace(/'/g, '&#039;');
   }
 };
+
+
+
+
