@@ -419,6 +419,13 @@ def transcribe_and_translate_video(
     
     try:
         audio_file = genai.upload_file(path=str(wav_path))
+        import time
+        while audio_file.state.name == "PROCESSING":
+            time.sleep(2)
+            audio_file = genai.get_file(audio_file.name)
+        if audio_file.state.name == "FAILED":
+            raise RuntimeError("Gemini failed to process the audio file.")
+
         # Try multiple models since some keys don't support gemini-1.5-flash
         candidate_models = ["gemini-1.5-flash", "gemini-flash-lite-latest", "gemini-1.5-flash-latest", "gemini-1.5-pro"]
         response = None
