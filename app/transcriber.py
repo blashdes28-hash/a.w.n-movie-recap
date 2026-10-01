@@ -430,13 +430,18 @@ def transcribe_and_translate_video(
                 response = model.generate_content([prompt, audio_file])
                 break # Success
             except Exception as e:
-                last_error = str(e)
+                last_error = repr(e)
                 continue
                 
         if not response:
-            raise RuntimeError(f"Transcription error: {last_error}")
+            raise RuntimeError(f"Transcription failed on all models. Last error: {last_error}")
 
-        srt_content = response.text.strip()
+        try:
+            srt_content = response.text.strip()
+        except ValueError as e:
+            # Handle safety block exception
+            raise RuntimeError(f"Gemini response blocked by safety filters or empty. Details: {repr(e)}")
+            
         if srt_content.startswith("```srt"):
             srt_content = srt_content[6:]
         if srt_content.startswith("```"):

@@ -158,8 +158,14 @@ const API = {
       body: formData
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Transcription failed');
+      let errText = 'Transcription failed';
+      try {
+        const err = await res.json();
+        errText = err.detail || errText;
+      } catch (e) {
+        errText = `HTTP Error ${res.status}: ${res.statusText}`;
+      }
+      throw new Error(errText);
     }
     return await res.json();
   },
@@ -176,8 +182,14 @@ const API = {
       })
     });
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Transcription failed');
+      let errText = 'Transcription failed';
+      try {
+        const err = await res.json();
+        errText = err.detail || errText;
+      } catch (e) {
+        errText = `HTTP Error ${res.status}: ${res.statusText}`;
+      }
+      throw new Error(errText);
     }
     return await res.json();
   },
