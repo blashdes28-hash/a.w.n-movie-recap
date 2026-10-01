@@ -515,28 +515,34 @@ def transcribe_and_translate_video(
     }
 
 def parse_srt_string(srt_content: str) -> List[Dict[str, Any]]:
-    """Parses SRT format into structured segment list, tolerant of Gemini output quirks."""
+    """Parses SRT format into structured segment list, extremely tolerant of Gemini output quirks."""
     segments = []
     
-    # Very permissive regex to catch timestamps around "-->"
+    # Ultra-permissive regex to catch timestamps, even if everything is on a single line
+    # Matches: index (spaces/newlines) start (-> or -->) end (spaces/newlines) text
     pattern = re.compile(
-        r'(?:^|\n)\s*(\d+)\s*\n'
-        r'\s*(\d{1,2}:\d{1,2}:\d{1,2}(?:[,\.]\d+)?|\d{1,2}:\d{1,2}(?:[,\.]\d+)?)\s*-->\s*'
-        r'(\d{1,2}:\d{1,2}:\d{1,2}(?:[,\.]\d+)?|\d{1,2}:\d{1,2}(?:[,\.]\d+)?)\s*\n'
-        r'([\s\S]*?)(?=\n\s*\d+\s*\n|\Z)',
-        re.MULTILINE
+        r'(\d+)\s+'                                              # 1: Index
+        r'([\d:,\.]+)\s*[-=]+>\s*([\d:,\.]+)\s*'                 # 2: Start, 3: End
+        r'(.*?)(?=\s+\d+\s+[\d:,\.]+[-=\s]+>|\Z)',               # 4: Text (lookahead for next segment or end)
+        re.DOTALL
     )
     
     def parse_time(ts: str) -> float:
-        ts = ts.replace(",", ".")
-        parts = ts.split(":")
-        if len(parts) == 3:
-            h, m, s = float(parts[0]), float(parts[1]), float(parts[2])
-        elif len(parts) == 2:
-            h, m, s = 0.0, float(parts[0]), float(parts[1])
-        else:
-            h, m, s = 0.0, 0.0, float(parts[0])
-        return h * 3600 + m * 60 + s
+        # Extract all numbers from the timestamp
+        nums = re.findall(r'\d+', ts)
+        if len(nums) >= 4:
+            # HH, MM, SS, MS
+            return float(nums[0])*3600 + float(nums[1])*60 + float(nums[2]) + float(nums[3])/1000.0
+        elif len(nums) == 3:
+            # Either HH, MM, SS or MM, SS, MS
+            # If the last part has 3 digits (e.g. 626), it's highly likely milliseconds
+            if len(nums[2]) >= 3:
+                return float(nums[0])*60 + float(nums[1]) + float(nums[2])/1000.0
+            else:
+                return float(nums[0])*3600 + float(nums[1])*60 + float(nums[2])
+        elif len(nums) == 2:
+            return float(nums[0])*60 + float(nums[1])
+        return 0.0
 
     def format_time(seconds: float) -> str:
         h = int(seconds // 3600)
@@ -558,6 +564,10 @@ def parse_srt_string(srt_content: str) -> List[Dict[str, Any]]:
         end_sec = parse_time(match.group(3).strip())
         text = match.group(4).strip()
         
+        # Skip empty text segments
+        if not text:
+            continue
+            
         segments.append({
             "index": idx,
             "start": round(start_sec, 3),
