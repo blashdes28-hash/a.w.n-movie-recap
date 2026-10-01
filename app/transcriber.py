@@ -510,43 +510,64 @@ def transcribe_and_translate_video(
     }
 
 def parse_srt_string(srt_content: str) -> List[Dict[str, Any]]:
-    """Parses SRT format into structured segment list."""
+    """Parses SRT format into structured segment list, tolerant of Gemini output quirks."""
+    segments = []
+    
+    # Very permissive regex to catch timestamps around "-->"
     pattern = re.compile(
-        r'(\d+)\s*\n'
-        r'(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*\n'
+        r'(?:^|\n)\s*(\d+)\s*\n'
+        r'\s*(\d{1,2}:\d{1,2}:\d{1,2}(?:[,\.]\d+)?|\d{1,2}:\d{1,2}(?:[,\.]\d+)?)\s*-->\s*'
+        r'(\d{1,2}:\d{1,2}:\d{1,2}(?:[,\.]\d+)?|\d{1,2}:\d{1,2}(?:[,\.]\d+)?)\s*\n'
         r'([\s\S]*?)(?=\n\s*\d+\s*\n|\Z)',
         re.MULTILINE
     )
-    segments = []
     
     def parse_time(ts: str) -> float:
         ts = ts.replace(",", ".")
         parts = ts.split(":")
-        h = float(parts[0])
-        m = float(parts[1])
-        s = float(parts[2])
+        if len(parts) == 3:
+            h, m, s = float(parts[0]), float(parts[1]), float(parts[2])
+        elif len(parts) == 2:
+            h, m, s = 0.0, float(parts[0]), float(parts[1])
+        else:
+            h, m, s = 0.0, 0.0, float(parts[0])
         return h * 3600 + m * 60 + s
+
+    def format_time(seconds: float) -> str:
+        h = int(seconds // 3600)
+        m = int((seconds % 3600) // 60)
+        s = seconds % 60
+        ms = int((s - int(s)) * 1000)
+        return f"{h:02d}:{m:02d}:{int(s):02d},{ms:03d}"
+
+    def format_vtt_time(seconds: float) -> str:
+        h = int(seconds // 3600)
+        m = int((seconds % 3600) // 60)
+        s = seconds % 60
+        ms = int((s - int(s)) * 1000)
+        return f"{h:02d}:{m:02d}:{int(s):02d}.{ms:03d}"
 
     for match in pattern.finditer(srt_content):
         idx = int(match.group(1))
-        start_str = match.group(2).replace(".", ",")
-        end_str = match.group(3).replace(".", ",")
+        start_sec = parse_time(match.group(2).strip())
+        end_sec = parse_time(match.group(3).strip())
         text = match.group(4).strip()
-        start_sec = parse_time(start_str)
-        end_sec = parse_time(end_str)
-
+        
         segments.append({
             "index": idx,
             "start": round(start_sec, 3),
             "end": round(end_sec, 3),
-            "start_str": start_str,
-            "end_str": end_str,
+            "start_str": format_time(start_sec),
+            "end_str": format_time(end_sec),
             "vtt_start": format_vtt_time(start_sec),
             "vtt_end": format_vtt_time(end_sec),
+            "start_time": start_sec,
+            "end_time": end_sec,
             "zh_text": text,
             "my_text": "",
             "en_text": ""
         })
+    
     return segments
 
 def translate_srt_content(
