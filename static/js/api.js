@@ -145,7 +145,6 @@ const API = {
     return await res.json();
   },
 
-  async 
   async transcribeVideoAsync(file, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
     const formData = new FormData();
     formData.append('file', file);
