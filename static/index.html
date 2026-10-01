@@ -821,7 +821,7 @@
                   ⚡ နမူနာဖြင့် စမ်းမည်
                 </button>
               </div>
-              <input id="transcribe-srt-input" type="file" accept=".srt,.txt,text/plain,application/x-subrip,text/srt" class="hidden" onchange="Tools.handleSrtUpload(this.files[0])">
+              <input id="transcribe-srt-input" type="file" accept="*/*" class="hidden" onchange="Tools.handleSrtUpload(this.files[0])">
             </div>
           </div>
         </div>
@@ -1575,7 +1575,7 @@
                   <button onclick="document.getElementById('translate-srt-file-input').click()" class="text-xs text-emerald-400 hover:underline flex items-center gap-1">
                     <span>📁</span> Upload .SRT
                   </button>
-                  <input id="translate-srt-file-input" type="file" accept=".srt,.txt,text/plain,application/x-subrip,text/srt" class="hidden" onchange="Tools.handleTranslateSrtFileUpload(this.files[0])">
+                  <input id="translate-srt-file-input" type="file" accept="*/*" class="hidden" onchange="Tools.handleTranslateSrtFileUpload(this.files[0])">
                 </div>
               </div>
 
