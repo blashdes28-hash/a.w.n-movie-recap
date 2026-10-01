@@ -240,9 +240,10 @@ const API = {
   },
 
 
-  async transcribeSrt(file) {
+  async transcribeSrt(file, geminiApiKey = '') {
     const formData = new FormData();
     formData.append('file', file);
+    if (geminiApiKey) formData.append('gemini_api_key', geminiApiKey);
     const res = await fetch('/api/transcribe/srt', {
       method: 'POST',
       body: formData

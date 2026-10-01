@@ -62,7 +62,7 @@ const Tools = {
       } else {
          localStorage.setItem('gemini_key_global', key);
       }
-      await API.saveSettings({ gemini_api_key: key });
+      
       App.showToast('✅ Gemini API Key သိမ်းဆည်းပြီးပါပြီ! AI စကားပြောဟန် စနစ် အသုံးပြုနိုင်ပါပြီ။', 'success');
       await this.loadAiStatus();
     } catch (e) {
@@ -997,7 +997,7 @@ const Tools = {
     }
 
     try {
-      const res = await API.transcribeSrt(file);
+      const res = await API.transcribeSrt(file, this.getGeminiKey());
       this.currentSegments = res.segments || [];
       this.renderTimelineTable();
 

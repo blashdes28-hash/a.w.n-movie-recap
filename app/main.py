@@ -497,12 +497,12 @@ def transcribe_existing_video_endpoint(req: TranscribeExistingVideoRequest):
 
 
 @app.post("/api/transcribe/srt")
-async def transcribe_srt_endpoint(file: UploadFile = File(...)):
+async def transcribe_srt_endpoint(file: UploadFile = File(...), gemini_api_key: str = Form(None)):
     try:
         content_bytes = await file.read()
         srt_text = content_bytes.decode("utf-8", errors="replace")
         config = load_config()
-        gemini_key = config.get("gemini_api_key")
+        gemini_key = gemini_api_key or config.get("gemini_api_key")
         openrouter_key = config.get("openrouter_api_key")
 
         result = translate_srt_content(
