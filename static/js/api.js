@@ -145,7 +145,53 @@ const API = {
     return await res.json();
   },
 
-  async transcribeVideo(file, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
+  async 
+  async transcribeVideoAsync(file, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('source_lang', sourceLang);
+    formData.append('whisper_model', whisperModel);
+    if (geminiApiKey) {
+      formData.append('gemini_api_key', geminiApiKey);
+    }
+    const res = await fetch('/api/transcribe/video-async', {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) {
+      let errText = 'Transcription failed';
+      try { const err = await res.json(); errText = err.detail || errText; } catch(e) { errText = `HTTP Error ${res.status}: ${res.statusText}`; }
+      throw new Error(errText);
+    }
+    return await res.json(); // returns {job_id, status}
+  },
+
+  async transcribeExistingVideoAsync(videoFile, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
+    const res = await fetch('/api/transcribe/existing-video-async', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        video_file: videoFile,
+        source_lang: sourceLang,
+        whisper_model: whisperModel,
+        gemini_api_key: geminiApiKey
+      })
+    });
+    if (!res.ok) {
+      let errText = 'Transcription failed';
+      try { const err = await res.json(); errText = err.detail || errText; } catch(e) { errText = `HTTP Error ${res.status}: ${res.statusText}`; }
+      throw new Error(errText);
+    }
+    return await res.json(); // returns {job_id, status}
+  },
+
+  async checkTranscribeStatus(jobId) {
+    const res = await fetch(`/api/transcribe/status/${jobId}`);
+    if (!res.ok) throw new Error("Status check failed");
+    return await res.json();
+  },
+
+  transcribeVideo(file, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('source_lang', sourceLang);

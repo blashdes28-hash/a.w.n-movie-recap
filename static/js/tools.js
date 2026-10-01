@@ -351,7 +351,21 @@ const Tools = {
 
     try {
       const geminiApiKey = Tools.getGeminiKey();
-      const res = await API.transcribeExistingVideo(videoFilename, srcLang, whisperModel, geminiApiKey);
+      
+      let jobRes = await API.transcribeExistingVideoAsync(videoFilename, srcLang, whisperModel, geminiApiKey);
+      const jobId = jobRes.job_id;
+      let res;
+      while (true) {
+          await new Promise(r => setTimeout(r, 5000));
+          const statusObj = await API.checkTranscribeStatus(jobId);
+          if (statusObj.status === 'done') {
+              res = statusObj.result;
+              break;
+          } else if (statusObj.status === 'error') {
+              throw new Error(statusObj.error || "Unknown error during background processing");
+          }
+      }
+
       this.currentSegments = res.segments || [];
       this.renderTimelineTable();
 
@@ -914,7 +928,21 @@ const Tools = {
 
     try {
       const geminiApiKey = Tools.getGeminiKey();
-      const res = await API.transcribeVideo(file, srcLang, whisperModel, geminiApiKey);
+      
+      let jobRes = await API.transcribeVideoAsync(file, srcLang, whisperModel, geminiApiKey);
+      const jobId = jobRes.job_id;
+      let res;
+      while (true) {
+          await new Promise(r => setTimeout(r, 5000));
+          const statusObj = await API.checkTranscribeStatus(jobId);
+          if (statusObj.status === 'done') {
+              res = statusObj.result;
+              break;
+          } else if (statusObj.status === 'error') {
+              throw new Error(statusObj.error || "Unknown error during background processing");
+          }
+      }
+
       this.currentSegments = res.segments || [];
       this.uploadedVideoFilename = res.video_file || null;
 
