@@ -375,9 +375,10 @@ const Tools = {
       const modal = document.getElementById('transcribe-loading-state');
       if (modal) modal.classList.add('hidden');
       if (statusEl) {
-        statusEl.innerHTML = `<span class="text-rose-400 font-semibold">⚠️ Transcription error: ${e.message}</span>`;
+        statusEl.innerHTML = `<span class="text-rose-400 font-semibold">⚠️ Transcription error: <span class="err-text"></span></span>`;
+        statusEl.querySelector('.err-text').innerText = e.message || 'Network Timeout / API Error';
       }
-      App.showToast('Transcription error: ' + e.message, 'error');
+      App.showToast('Transcription error: ' + (e.message || 'Unknown'), 'error');
     }
   },
 
@@ -948,9 +949,10 @@ const Tools = {
       const modal = document.getElementById('transcribe-loading-state');
       if (modal) modal.classList.add('hidden');
       if (statusEl) {
-        statusEl.innerHTML = `<span class="text-rose-400 font-semibold">⚠️ အမှားဖြစ်ခဲ့ပါသည်: ${e.message}</span>`;
+        statusEl.innerHTML = `<span class="text-rose-400 font-semibold">⚠️ အမှားဖြစ်ခဲ့ပါသည်: <span class="err-text"></span></span>`;
+        statusEl.querySelector('.err-text').innerText = e.message || 'Network Timeout / API Error';
       }
-      App.showToast('Transcription error: ' + e.message, 'error');
+      App.showToast('Transcription error: ' + (e.message || 'Unknown'), 'error');
     }
   },
 
@@ -988,9 +990,10 @@ const Tools = {
     } catch (e) {
       console.error(e);
       if (statusEl) {
-        statusEl.innerHTML = `<span class="text-rose-400 font-semibold">⚠️ SRT Error: ${e.message}</span>`;
+        statusEl.innerHTML = `<span class="text-rose-400 font-semibold">⚠️ SRT Error: <span class="err-text"></span></span>`;
+        statusEl.querySelector('.err-text').innerText = e.message || 'Network Timeout / API Error';
       }
-      App.showToast('SRT Error: ' + e.message, 'error');
+      App.showToast('SRT Error: ' + (e.message || 'Unknown'), 'error');
     } finally {
       if (progressModal) progressModal.classList.add('hidden');
     }
