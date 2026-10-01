@@ -1774,7 +1774,7 @@ const Tools = {
     ].filter(Boolean);
     for (const k of candidates) {
       const val = localStorage.getItem(k);
-      if (val && val.trim() && val.startsWith('AIza')) return val.trim();
+      if (val && val.trim()) return val.trim();
     }
     return '';
   },
@@ -1786,8 +1786,9 @@ const Tools = {
       App.showToast('Gemini API Key ရိုက်ထည့်ပါ', 'warning');
       return;
     }
-    if (!key.startsWith('AIza')) {
-      App.showToast('⚠️ API Key မှန်ကန်မှ မရှိပါ (AIza... ဖြင့် စရမည်)', 'error');
+    // Google occasionally issues keys starting with AQ. or other prefixes now, so we removed the strict 'AIza' check.
+    if (key.length < 30) {
+      App.showToast('⚠️ API Key မှန်ကန်ပုံမရပါ (အရှည်မပြည့်ပါ)', 'error');
       return;
     }
     try {
