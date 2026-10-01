@@ -6,7 +6,6 @@
 // Called by Google Sign-In SDK after user authenticates
 function handleGoogleCredentialResponse(response) {
   try {
-    // Decode JWT to get user info
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
     const email = payload.email || '';
     const name = payload.name || 'User';
@@ -17,8 +16,26 @@ function handleGoogleCredentialResponse(response) {
     localStorage.setItem('awn_google_name', name);
     localStorage.setItem('awn_google_picture', picture);
     localStorage.setItem('awn_google_signed_in', '1');
+    window.currentUserEmail = email;
 
-    AuthManager.onSignedIn(email, name, picture);
+    // Show signed-in status on license modal (don't skip license requirement)
+    const note = document.getElementById('modal-signed-in-note');
+    if (note) {
+      note.textContent = `✅ Signed in as ${name} (${email})`;
+      note.classList.remove('hidden');
+    }
+    // Hide Google Sign-In button (already signed in)
+    const signInDiv = document.getElementById('modal-google-signin');
+    if (signInDiv) signInDiv.classList.add('hidden');
+
+    // Load their API key into the Gemini key page if available
+    const savedKey = localStorage.getItem(`awn_gemini_key_${email}`) || localStorage.getItem(`gemini_key_${email}`);
+    if (savedKey) {
+      localStorage.setItem('awn_gemini_api_key', savedKey);
+      localStorage.setItem('gemini_key_global', savedKey);
+      const keyInputs = document.querySelectorAll('#gemini-page-key-input, #auth-gemini-key-input');
+      keyInputs.forEach(el => { if (el) el.value = savedKey; });
+    }
   } catch (e) {
     console.error('Google sign-in decode error:', e);
   }

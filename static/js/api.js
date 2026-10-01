@@ -457,10 +457,11 @@ const API = {
 
   // --- Gemini API Key Diagnostic ---
   async testGemini(apiKey) {
+    const key = apiKey || Tools.getGeminiKey();
     const res = await fetch('/api/gemini/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_key: apiKey || '' })
+      body: JSON.stringify({ gemini_api_key: key, api_key: key })
     });
     return await res.json();
   }

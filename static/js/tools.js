@@ -1,4 +1,4 @@
-﻿// Transcribe, Chinese-to-Burmese Timeline Studio, and Translate Tools
+// Transcribe, Chinese-to-Burmese Timeline Studio, and Translate Tools
 const Tools = {
   currentSegments: [],
   activeVideoUrl: null,
@@ -350,13 +350,7 @@ const Tools = {
     }
 
     try {
-            let geminiApiKey = '';
-      if (window.currentUserEmail) {
-         geminiApiKey = localStorage.getItem('gemini_key_' + window.currentUserEmail) || '';
-      }
-      if (!geminiApiKey) {
-         geminiApiKey = localStorage.getItem('gemini_key_global') || '';
-      }
+      const geminiApiKey = Tools.getGeminiKey();
       const res = await API.transcribeExistingVideo(videoFilename, srcLang, whisperModel, geminiApiKey);
       this.currentSegments = res.segments || [];
       this.renderTimelineTable();
@@ -918,13 +912,7 @@ const Tools = {
     }
 
     try {
-            let geminiApiKey = '';
-      if (window.currentUserEmail) {
-         geminiApiKey = localStorage.getItem('gemini_key_' + window.currentUserEmail) || '';
-      }
-      if (!geminiApiKey) {
-         geminiApiKey = localStorage.getItem('gemini_key_global') || '';
-      }
+      const geminiApiKey = Tools.getGeminiKey();
       const res = await API.transcribeVideo(file, srcLang, whisperModel, geminiApiKey);
       this.currentSegments = res.segments || [];
       this.uploadedVideoFilename = res.video_file || null;
@@ -1746,6 +1734,24 @@ const Tools = {
     }
   },
 
+  // Helper: get Gemini key from any localStorage format
+  getGeminiKey() {
+    const email = localStorage.getItem('awn_google_email') || window.currentUserEmail || '';
+    // Check all formats in priority order
+    const candidates = [
+      email ? `awn_gemini_key_${email}` : null,
+      email ? `gemini_key_${email}` : null,
+      'awn_gemini_api_key',
+      'gemini_key_global',
+      'gemini_api_key'
+    ].filter(Boolean);
+    for (const k of candidates) {
+      const val = localStorage.getItem(k);
+      if (val && val.trim() && val.startsWith('AIza')) return val.trim();
+    }
+    return '';
+  },
+
   async saveGeminiKeyFromPage() {
     const input = document.getElementById('gemini-page-key-input');
     const key = input ? input.value.trim() : '';
@@ -1753,13 +1759,27 @@ const Tools = {
       App.showToast('Gemini API Key ရိုက်ထည့်ပါ', 'warning');
       return;
     }
+    if (!key.startsWith('AIza')) {
+      App.showToast('⚠️ API Key မှန်ကန်မှ မရှိပါ (AIza... ဖြင့် စရမည်)', 'error');
+      return;
+    }
     try {
-            if (window.currentUserEmail) {
-         localStorage.setItem('gemini_key_' + window.currentUserEmail, key);
-      } else {
-         localStorage.setItem('gemini_key_global', key);
+      // Save with ALL key formats so any lookup finds it
+      const email = localStorage.getItem('awn_google_email') || window.currentUserEmail || '';
+      if (email) {
+        localStorage.setItem(`awn_gemini_key_${email}`, key);
+        localStorage.setItem(`gemini_key_${email}`, key);
       }
-      await API.saveSettings({ gemini_api_key: key });
+      localStorage.setItem('awn_gemini_api_key', key);
+      localStorage.setItem('gemini_key_global', key);
+      // Try to save to server (non-blocking)
+      try {
+        await fetch('/api/gemini/save-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gemini_api_key: key })
+        });
+      } catch (_) { /* Server save optional */ }
       App.showToast('✅ Gemini API Key သိမ်းဆည်းပြီးပါပြီ!', 'success');
       this.loadGeminiKeyForPage();
       this.checkAiStatus();

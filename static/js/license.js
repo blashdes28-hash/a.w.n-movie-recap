@@ -35,15 +35,51 @@ const LicenseManager = {
 
   verifyWithGoogleAuth() {
     const activationModal = document.getElementById('license-activation-modal');
-    // Let AuthManager handle sign-in check
-    const alreadySignedIn = AuthManager.init();
-    if (alreadySignedIn) {
-      // User is signed in and has key - unlock immediately
-      this.isUnlocked = true;
-      if (activationModal) activationModal.classList.add('hidden');
-    } else {
-      // Show sign-in modal
-      if (activationModal) activationModal.classList.remove('hidden');
+
+    // Check if they have a stored valid license key
+    const storedKey = localStorage.getItem('awn_license_key');
+    const licenseExpiry = localStorage.getItem('awn_license_expiry');
+    const isActivated = localStorage.getItem('awn_license_activated') === 'true';
+
+    // Check expiry
+    if (isActivated && storedKey) {
+      if (!licenseExpiry) {
+        // Lifetime license - always valid
+        this.isUnlocked = true;
+        if (activationModal) activationModal.classList.add('hidden');
+        // Auto-load Google info if signed in
+        const email = localStorage.getItem('awn_google_email');
+        const name = localStorage.getItem('awn_google_name');
+        if (email && name) window.currentUserEmail = email;
+        return;
+      }
+      // Check if not yet expired
+      const expDate = new Date(licenseExpiry);
+      if (expDate > new Date()) {
+        this.isUnlocked = true;
+        if (activationModal) activationModal.classList.add('hidden');
+        const email = localStorage.getItem('awn_google_email');
+        if (email) window.currentUserEmail = email;
+        return;
+      }
+      // Expired - clear and show modal
+      localStorage.removeItem('awn_license_activated');
+    }
+
+    // No valid license - show License Key modal
+    if (activationModal) {
+      activationModal.classList.remove('hidden');
+      // If Google is signed in, prefill email info on modal
+      const email = localStorage.getItem('awn_google_email');
+      const name = localStorage.getItem('awn_google_name');
+      if (email && name) {
+        window.currentUserEmail = email;
+        const signedInNote = document.getElementById('modal-signed-in-note');
+        if (signedInNote) {
+          signedInNote.textContent = `✅ Signed in as ${name} (${email})`;
+          signedInNote.classList.remove('hidden');
+        }
+      }
     }
   },
 
@@ -146,13 +182,24 @@ const LicenseManager = {
       if (res && res.valid) {
         localStorage.setItem('awn_license_key', key);
         localStorage.setItem('awn_license_activated', 'true');
+        // Save expiry so next visit can auto-check
+        if (res.expires_at) {
+          localStorage.setItem('awn_license_expiry', res.expires_at);
+        } else {
+          localStorage.removeItem('awn_license_expiry'); // Lifetime
+        }
+        // Link Google account to this license
+        const email = localStorage.getItem('awn_google_email');
+        if (email) {
+          localStorage.setItem(`awn_license_for_${email}`, key);
+        }
         this.activeLicenseData = res;
         this.unlockApp(document.getElementById('license-activation-modal'));
         this.updateLicenseBadge(res);
-
         if (window.App && App.showToast) {
-          App.showToast('🎉 စက်အသုံးပြုခွင့် လိုင်စင် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ!', 'success');
+          App.showToast('🎉 License Key အောင်မြင်စွာ အသုံးပြုခွင့် ရပြီပါပြီ!', 'success');
         }
+
       } else {
         throw new Error(res.error || 'Activation failed');
       }

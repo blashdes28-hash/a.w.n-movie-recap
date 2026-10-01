@@ -701,15 +701,17 @@ def delete_license_endpoint(req: LicenseKeyActionRequest, x_admin_password: Opti
 @app.post("/api/gemini/test")
 def test_gemini_endpoint(data: Dict[str, Any] = None):
     data = data or {}
-    key = data.get("api_key")
+    # Accept both field names from frontend
+    key = data.get("gemini_api_key") or data.get("api_key")
     if not key or not key.strip():
         config = load_config()
         key = config.get("gemini_api_key")
     if not key or not key.strip():
-        return {"success": False, "error": "No Gemini API Key provided or configured."}
+        return {"success": False, "status": "error", "error": "No Gemini API Key provided or configured."}
 
-    candidate_models = ["gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]
+    candidate_models = ["gemini-1.5-flash", "gemini-flash-lite-latest", "gemini-1.5-flash-latest"]
     successful_model = None
+    last_error = ""
     for model in candidate_models:
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key.strip()}"
@@ -721,19 +723,32 @@ def test_gemini_endpoint(data: Dict[str, Any] = None):
             if res.status_code == 200:
                 successful_model = model
                 break
-        except Exception:
-            pass
+            else:
+                last_error = res.text[:200]
+        except Exception as e:
+            last_error = str(e)
 
     if successful_model:
         return {
             "success": True,
+            "status": "ok",
             "model": successful_model,
-            "message": f"Connected to Google Gemini API successfully! (Model: {successful_model})"
+            "message": f"Gemini API အောင်မြင်စွာ ချိတ်ဆက်ပြီးပါပြီ! Model: {successful_model}"
         }
     return {
         "success": False,
-        "error": "Failed to connect to Google Gemini API. Please check your API key or quota."
+        "status": "error",
+        "error": f"Failed to connect to Google Gemini API. Please check your API key or quota. ({last_error[:100]})"
     }
+
+@app.post("/api/gemini/save-key")
+def save_gemini_key(data: Dict[str, Any]):
+    """Saves the user's Gemini API key to server config (persisted in config.json)."""
+    key = (data.get("gemini_api_key") or data.get("api_key") or "").strip()
+    if not key:
+        raise HTTPException(status_code=400, detail="API key is required")
+    save_config({"gemini_api_key": key})
+    return {"success": True, "message": "Gemini API Key saved successfully on server."}
 
 # --- Projects CRUD ---
 
