@@ -453,7 +453,7 @@ def transcribe_and_translate_video(
     # Parse SRT into segments
     segments = parse_srt_string(srt_content)
     if not segments:
-        raise RuntimeError("Failed to parse SRT from Gemini response.")
+        raise RuntimeError(f"Failed to parse SRT from Gemini response. Raw: {srt_content[:200]}")
 
     # 3. Natural Translation into Burmese Recap Style and English Translation
     if (gemini_key and gemini_key.strip()) or (openrouter_key and openrouter_key.strip()):
