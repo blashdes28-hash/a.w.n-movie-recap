@@ -85,6 +85,16 @@ class ChatRequest(BaseModel):
 class TranslateRequest(BaseModel):
     text: str
 
+
+class DeviceCheckRequest(BaseModel):
+    device_id: str
+
+@app.post("/api/license/check-by-device")
+def check_by_device_endpoint(req: DeviceCheckRequest):
+    from app.license_manager import find_license_by_device
+    res = find_license_by_device(req.device_id)
+    return res
+
 class LicenseActivateRequest(BaseModel):
     license_key: str
     device_id: str

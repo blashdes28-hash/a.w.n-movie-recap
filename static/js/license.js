@@ -39,53 +39,83 @@ const LicenseManager = {
     });
   },
 
-  verifyWithGoogleAuth() {
-    const activationModal = document.getElementById('license-activation-modal');
+  
+  async verifyWithGoogleAuth() {
+    const activationModal = document.getElementById('modal-license-gate') || document.getElementById('license-activation-modal');
+    if (!activationModal) return;
 
-    // Check if they have a stored valid license key
+    // 1. If Google signed in, check if backend has a license for this device (e.g. after clearing cache)
+    let email = localStorage.getItem('awn_google_email');
+    if (email) {
+      window.currentUserEmail = email;
+      try {
+        const res = await fetch('/api/license/check-by-device', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_id: this.currentDeviceId })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.valid && data.license_key) {
+            localStorage.setItem('awn_license_key', data.license_key);
+            localStorage.setItem('awn_license_activated', 'true');
+            // Assume lifetime if no expiry returned here, or we let verifyDeviceLicense check it
+          }
+        }
+      } catch (e) {
+        console.warn("Could not check device license from backend", e);
+      }
+    }
+
+    // 2. Check local license key
     const storedKey = localStorage.getItem('awn_license_key');
     const licenseExpiry = localStorage.getItem('awn_license_expiry');
     const isActivated = localStorage.getItem('awn_license_activated') === 'true';
 
-    // Check expiry
     if (isActivated && storedKey) {
       if (!licenseExpiry) {
-        // Lifetime license - always valid
         this.isUnlocked = true;
-        if (activationModal) activationModal.classList.add('hidden');
-        // Auto-load Google info if signed in
-        const email = localStorage.getItem('awn_google_email');
-        const name = localStorage.getItem('awn_google_name');
-        if (email && name) window.currentUserEmail = email;
+        activationModal.classList.add('hidden');
         return;
       }
-      // Check if not yet expired
       const expDate = new Date(licenseExpiry);
       if (expDate > new Date()) {
         this.isUnlocked = true;
-        if (activationModal) activationModal.classList.add('hidden');
-        const email = localStorage.getItem('awn_google_email');
-        if (email) window.currentUserEmail = email;
+        activationModal.classList.add('hidden');
         return;
       }
-      // Expired - clear and show modal
       localStorage.removeItem('awn_license_activated');
     }
 
-    // No valid license - show License Key modal
-    if (activationModal) {
-      activationModal.classList.remove('hidden');
-      // If Google is signed in, prefill email info on modal
-      const email = localStorage.getItem('awn_google_email');
-      const name = localStorage.getItem('awn_google_name');
-      if (email && name) {
-        window.currentUserEmail = email;
-        const signedInNote = document.getElementById('modal-signed-in-note');
-        if (signedInNote) {
-          signedInNote.textContent = `✅ Signed in as ${name} (${email})`;
-          signedInNote.classList.remove('hidden');
-        }
+    // 3. No valid license -> Show Modal
+    this.showLicenseModal();
+  },
+
+  showLicenseModal() {
+    const modal = document.getElementById('modal-license-gate') || document.getElementById('license-activation-modal');
+    if (modal) modal.classList.remove('hidden');
+    this.refreshDisplayedDeviceId();
+    
+    const googleSection = document.getElementById('modal-google-signin');
+    const inputSection = document.getElementById('modal-license-input-section');
+    const signedInNote = document.getElementById('modal-signed-in-note');
+    
+    const email = localStorage.getItem('awn_google_email');
+    const name = localStorage.getItem('awn_google_name');
+
+    if (email) {
+      // User IS signed into Google. Hide Google button, Show License Input.
+      if (googleSection) googleSection.style.display = 'none';
+      if (inputSection) inputSection.style.display = 'flex';
+      if (signedInNote) {
+        signedInNote.textContent = `✅ Signed in as ${name || email.split('@')[0]} (${email})`;
+        signedInNote.classList.remove('hidden');
       }
+    } else {
+      // User IS NOT signed into Google. Show Google button, Hide License Input.
+      if (googleSection) googleSection.style.display = 'flex';
+      if (inputSection) inputSection.style.display = 'none';
+      if (signedInNote) signedInNote.classList.add('hidden');
     }
   },
 
