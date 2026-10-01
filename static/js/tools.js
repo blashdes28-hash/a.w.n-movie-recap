@@ -1809,7 +1809,6 @@ const Tools = {
       } catch (_) { /* Server save optional */ }
       App.showToast('✅ Gemini API Key သိမ်းဆည်းပြီးပါပြီ!', 'success');
       this.loadGeminiKeyForPage();
-      this.checkAiStatus();
     } catch (e) {
       App.showToast('Error saving key: ' + e.message, 'error');
     }

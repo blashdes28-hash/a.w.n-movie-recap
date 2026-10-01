@@ -870,7 +870,7 @@ def burn_subtitles_to_video(
 
         cmd.extend([
             "-c:v", "libx264",
-            "-preset", "veryfast",
+            "-preset", "ultrafast",
             "-crf", crf_val,
             "-threads", "0",
             "-pix_fmt", "yuv420p",

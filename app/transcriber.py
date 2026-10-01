@@ -419,9 +419,23 @@ def transcribe_and_translate_video(
     
     try:
         audio_file = genai.upload_file(path=str(wav_path))
-        model = genai.GenerativeModel("models/gemini-1.5-flash")
-        prompt = "Transcribe the following audio. Return the exact response in SRT format. Only output the SRT content, no markdown blocks."
-        response = model.generate_content([prompt, audio_file])
+        # Try multiple models since some keys don't support gemini-1.5-flash
+        candidate_models = ["gemini-1.5-flash", "gemini-flash-lite-latest", "gemini-1.5-flash-latest", "gemini-1.5-pro"]
+        response = None
+        last_error = None
+        for model_name in candidate_models:
+            try:
+                model = genai.GenerativeModel(model_name)
+                prompt = "Transcribe the following audio. Return the exact response in SRT format. Only output the SRT content, no markdown blocks."
+                response = model.generate_content([prompt, audio_file])
+                break # Success
+            except Exception as e:
+                last_error = str(e)
+                continue
+                
+        if not response:
+            raise RuntimeError(f"Transcription error: {last_error}")
+
         srt_content = response.text.strip()
         if srt_content.startswith("```srt"):
             srt_content = srt_content[6:]
