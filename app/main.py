@@ -48,6 +48,9 @@ import requests
 for d in [UPLOADS_DIR, OUTPUT_DIR, DATA_DIR, BASE_DIR / "static"]:
     d.mkdir(parents=True, exist_ok=True)
 
+# In-memory job tracker for async burn jobs
+BURN_JOBS: Dict[str, Any] = {}
+
 app = FastAPI(title="A.W.N Movie Recap Studio", version="2.5.0")
 
 app.add_middleware(
@@ -559,7 +562,8 @@ async def upload_custom_font(file: UploadFile = File(...)):
     }
 
 @app.post("/api/transcribe/burn-video")
-def burn_video_endpoint(req: BurnVideoRequest):
+async def burn_video_endpoint(req: BurnVideoRequest, background_tasks: BackgroundTasks):
+    """Start subtitle burn as background job. Returns job_id immediately."""
     try:
         video_filename = req.video_file
         video_path = UPLOADS_DIR / video_filename
@@ -574,52 +578,71 @@ def burn_video_endpoint(req: BurnVideoRequest):
         out_filename = f"subtitled_{job_uid}.mp4"
         out_path = OUTPUT_DIR / out_filename
 
-        sub_mode = req.sub_mode or ("my_en" if req.sub_type == "bilingual" else "my")
-        font_name = req.font_name or "Pyidaungsu"
-        font_size = req.font_size or 34
-        sub_color = req.sub_color or "#ffffff"
-        margin_v = req.margin_v or 50
-        style_type = req.style_type or "box"
-        position_type = req.position_type or "bottom"
-        y_percent = req.y_percent if req.y_percent is not None else 0.86
+        # Store job state
+        BURN_JOBS[job_uid] = {"status": "queued", "progress": 0, "message": "ပြင်ဆင်နေသည်...", "video_url": None, "error": None}
 
-        burn_subtitles_to_video(
-            video_path=video_path,
-            output_path=out_path,
-            segments=req.segments,
-            sub_mode=sub_mode,
-            font_name=font_name,
-            sub_font_size=font_size,
-            sub_color=sub_color,
-            margin_v=margin_v,
-            style_type=style_type,
-            position_type=position_type,
-            y_percent=y_percent,
-            aspect_ratio=req.aspect_ratio or "original",
-            resize_mode=req.resize_mode or "fit_blur",
-            blur_enabled=bool(req.blur_enabled),
-            blur_y_percent=float(req.blur_y_percent) if req.blur_y_percent is not None else 0.56,
-            blur_height_percent=float(req.blur_height_percent) if req.blur_height_percent is not None else 0.08,
-            logo_file=req.logo_file,
-            logo_pos=req.logo_pos or "top-right",
-            logo_size_percent=float(req.logo_size_percent) if req.logo_size_percent is not None else 0.18,
-            logo_opacity=float(req.logo_opacity) if req.logo_opacity is not None else 0.85,
-            orig_audio_volume=float(req.orig_audio_volume) if req.orig_audio_volume is not None else 1.0,
-            bgm_file=req.bgm_file,
-            bgm_volume=float(req.bgm_volume) if req.bgm_volume is not None else 0.35,
-            bgm_loop=bool(req.bgm_loop) if req.bgm_loop is not None else True,
-            export_quality=req.export_quality or "very_high"
-        )
+        # Launch in background thread
+        def run_burn():
+            try:
+                BURN_JOBS[job_uid]["status"] = "running"
+                BURN_JOBS[job_uid]["progress"] = 5
+                BURN_JOBS[job_uid]["message"] = "subtitle frames ရေးဆွဲနေသည်..."
 
-        return {
-            "video_file": out_filename,
-            "video_url": f"/media/output/{out_filename}",
-            "file_size_mb": round(out_path.stat().st_size / (1024 * 1024), 2)
-        }
+                sub_mode = req.sub_mode or ("my_en" if req.sub_type == "bilingual" else "my")
+                burn_subtitles_to_video(
+                    video_path=video_path,
+                    output_path=out_path,
+                    segments=req.segments,
+                    sub_mode=sub_mode,
+                    font_name=req.font_name or "Pyidaungsu",
+                    sub_font_size=req.font_size or 34,
+                    sub_color=req.sub_color or "#ffffff",
+                    margin_v=req.margin_v or 50,
+                    style_type=req.style_type or "box",
+                    position_type=req.position_type or "bottom",
+                    y_percent=req.y_percent if req.y_percent is not None else 0.86,
+                    aspect_ratio=req.aspect_ratio or "original",
+                    resize_mode=req.resize_mode or "fit_blur",
+                    blur_enabled=bool(req.blur_enabled),
+                    blur_y_percent=float(req.blur_y_percent) if req.blur_y_percent is not None else 0.56,
+                    blur_height_percent=float(req.blur_height_percent) if req.blur_height_percent is not None else 0.08,
+                    logo_file=req.logo_file,
+                    logo_pos=req.logo_pos or "top-right",
+                    logo_size_percent=float(req.logo_size_percent) if req.logo_size_percent is not None else 0.18,
+                    logo_opacity=float(req.logo_opacity) if req.logo_opacity is not None else 0.85,
+                    orig_audio_volume=float(req.orig_audio_volume) if req.orig_audio_volume is not None else 1.0,
+                    bgm_file=req.bgm_file,
+                    bgm_volume=float(req.bgm_volume) if req.bgm_volume is not None else 0.35,
+                    bgm_loop=bool(req.bgm_loop) if req.bgm_loop is not None else True,
+                    export_quality=req.export_quality or "very_high",
+                    progress_callback=lambda pct: BURN_JOBS[job_uid].update({"progress": pct, "message": f"Rendering ({pct}%)"})
+                )
+                BURN_JOBS[job_uid]["status"] = "done"
+                BURN_JOBS[job_uid]["progress"] = 100
+                BURN_JOBS[job_uid]["message"] = "ဒေါင်းလုဒ် အဆင်သင့်!"
+                BURN_JOBS[job_uid]["video_url"] = f"/media/output/{out_filename}"
+                BURN_JOBS[job_uid]["video_file"] = out_filename
+                BURN_JOBS[job_uid]["file_size_mb"] = round(out_path.stat().st_size / (1024*1024), 2) if out_path.exists() else 0
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                BURN_JOBS[job_uid]["status"] = "error"
+                BURN_JOBS[job_uid]["progress"] = 0
+                BURN_JOBS[job_uid]["error"] = str(e)
+                BURN_JOBS[job_uid]["message"] = f"Error: {str(e)[:200]}"
+
+        background_tasks.add_task(run_burn)
+        return {"job_id": job_uid, "status": "queued"}
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/transcribe/burn-status/{job_id}")
+def burn_status_endpoint(job_id: str):
+    """Poll burn job status and progress."""
+    job = BURN_JOBS.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
 
 # --- Secret Admin Backend & License Control (1 Key = 1 Device) ---
 

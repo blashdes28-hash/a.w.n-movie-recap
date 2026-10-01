@@ -23,6 +23,10 @@ const ScriptAssistant = {
           this.sendMessage();
         }
       });
+      input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = (input.scrollHeight) + 'px';
+      });
     }
 
     // Video player controls
@@ -60,7 +64,10 @@ const ScriptAssistant = {
     const message = customText || (input ? input.value.trim() : '');
     if (!message) return;
 
-    if (input) input.value = '';
+    if (input) {
+      input.value = '';
+      input.style.height = 'auto'; // Reset height
+    }
 
     // Append user message
     this.appendMessage('user', message);

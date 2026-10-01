@@ -663,7 +663,8 @@ def burn_subtitles_to_video(
     bgm_file: Optional[str] = None,
     bgm_volume: float = 0.35,
     bgm_loop: bool = True,
-    export_quality: str = "very_high"
+    export_quality: str = "very_high",
+    progress_callback: Optional[callable] = None
 ) -> Path:
     """
     Burns synchronized Burmese / bilingual subtitles onto a video using HarfBuzz + FreeType
@@ -876,22 +877,39 @@ def burn_subtitles_to_video(
             str(output_path)
         ])
 
-        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if res.returncode != 0:
+        def run_ffmpeg_with_progress(cmd_list):
+            process = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, universal_newlines=True)
+            last_stderr = ""
+            for line in process.stderr:
+                last_stderr += line
+                if len(last_stderr) > 1000:
+                    last_stderr = last_stderr[-1000:]
+                
+                # Parse progress e.g. time=00:01:23.45
+                if progress_callback and "time=" in line:
+                    match = re.search(r"time=(\d+):(\d+):(\d+\.\d+)", line)
+                    if match and video_dur > 0:
+                        hrs, mins, secs = match.groups()
+                        curr_sec = float(hrs) * 3600 + float(mins) * 60 + float(secs)
+                        pct = min(99, int((curr_sec / video_dur) * 100))
+                        progress_callback(pct)
+            
+            process.wait()
+            return process.returncode, last_stderr
+
+        retcode, err_out = run_ffmpeg_with_progress(cmd)
+        if retcode != 0:
             # Fallback with AAC audio encoding if stream copy fails
-            cmd_reencode = [
-                arg if arg != "copy" else "aac" for arg in cmd
-            ]
-            # Replace -c:a aac and add -b:a 192k
+            cmd_reencode = [arg if arg != "copy" else "aac" for arg in cmd]
             try:
                 a_idx = cmd_reencode.index("-c:a")
                 cmd_reencode.insert(a_idx + 2, "-b:a")
                 cmd_reencode.insert(a_idx + 3, "192k")
             except Exception:
                 pass
-            res2 = subprocess.run(cmd_reencode, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            if res2.returncode != 0:
-                raise RuntimeError(f"FFmpeg subtitle burn failed: {res2.stderr[-400:]}")
+            retcode2, err_out2 = run_ffmpeg_with_progress(cmd_reencode)
+            if retcode2 != 0:
+                raise RuntimeError(f"FFmpeg subtitle burn failed: {err_out2[-400:]}")
 
     finally:
         # Cleanup temporary frames directory

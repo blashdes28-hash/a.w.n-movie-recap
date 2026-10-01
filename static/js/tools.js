@@ -1368,7 +1368,7 @@ const Tools = {
     extraFeatures.push(exportQuality === 'very_high' ? 'Ultra HD (CRF 18)' : 'HD');
     const extraStr = extraFeatures.length > 0 ? ` (${extraFeatures.join(', ')})` : '';
 
-    App.showToast(`⏳ [${fontName}] ဖောင့်ဖြင့် ${modeLabel} စာတန်းထိုး${extraStr}ကို စာလုံးမပျက်စီးအောင် ပေါင်းစပ်နေပါသည်...`, 'info');
+    App.showToast(`⏳ [${fontName}] ဖောင့်ဖြင့် ${modeLabel} စာတန်းထိုး${extraStr}ကို စတင်ပေါင်းစပ်နေပါသည်...`, 'info');
 
     try {
       const res = await API.burnSubtitledVideo({
@@ -1396,12 +1396,39 @@ const Tools = {
         bgmLoop: true,
         exportQuality: exportQuality
       });
-      if (res && res.video_url) {
-        const a = document.createElement('a');
-        a.href = res.video_url;
-        a.download = res.video_file;
-        a.click();
-        App.showToast('🎉 စာတန်းထိုး၊ BGM နှင့် Ultra HD ပါရှိသော ဗီဒီယို (MP4) ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ!', 'success');
+
+      if (res && res.job_id) {
+        // Poll for progress
+        const jobId = res.job_id;
+        let jobDone = false;
+        let finalUrl = null;
+        let finalFilename = null;
+
+        while (!jobDone) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2s
+          const statusRes = await API.pollBurnStatus(jobId);
+          if (statusRes.status === 'error') {
+            throw new Error(statusRes.error || 'Server processing error');
+          }
+          if (statusRes.status === 'done') {
+            jobDone = true;
+            finalUrl = statusRes.video_url;
+            finalFilename = statusRes.video_file;
+            if (btn) btn.innerHTML = `<span>🎬</span> ဆွဲနေသည် (100%)`;
+          } else {
+            const pct = statusRes.progress || 0;
+            const msg = statusRes.message || 'Processing...';
+            if (btn) btn.innerHTML = `<span class="animate-spin inline-block mr-1">⏳</span> ${msg} (${pct}%)`;
+          }
+        }
+
+        if (finalUrl) {
+          const a = document.createElement('a');
+          a.href = finalUrl;
+          a.download = finalFilename;
+          a.click();
+          App.showToast('🎉 စာတန်းထိုး၊ BGM နှင့် Ultra HD ပါရှိသော ဗီဒီယို (MP4) ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ!', 'success');
+        }
       }
     } catch (e) {
       console.error(e);

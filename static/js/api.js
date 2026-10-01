@@ -375,6 +375,15 @@ const API = {
     return await res.json();
   },
 
+  async pollBurnStatus(jobId) {
+    const res = await fetch(`/api/transcribe/burn-status/${jobId}`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to check burn status');
+    }
+    return await res.json();
+  },
+
   // --- License Management APIs ---
   async activateLicense(licenseKey, deviceId, deviceInfo) {
     const res = await fetch('/api/license/activate', {
