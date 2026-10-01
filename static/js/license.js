@@ -14,6 +14,12 @@ const LicenseManager = {
   },
 
   getOrCreateDeviceId() {
+    // If the user has a Google email saved, use that as the permanent Device/User ID!
+    const googleEmail = localStorage.getItem('awn_google_email');
+    if (googleEmail) {
+      return 'GOOG-' + googleEmail.trim().toLowerCase();
+    }
+
     let id = localStorage.getItem('awn_device_id');
     if (!id || id.length < 10) {
       if (typeof crypto !== 'undefined' && crypto.randomUUID) {

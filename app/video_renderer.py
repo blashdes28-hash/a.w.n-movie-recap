@@ -386,7 +386,12 @@ def render_composite_subtitle_frame(
 
     # Build line elements with auto-wrapping
     lines_to_render = []
-    max_char_per_line = max(25, int(36 * (video_w / 1280.0)))
+    
+    # Dynamically calculate max characters per line based on video width and font size
+    # An average Burmese character is about 60% of the font height in width
+    approx_char_width = eff_font_size * 0.6 
+    max_w_allowed = video_w * 0.90 # Leave 5% margin on each side
+    max_char_per_line = max(12, int(max_w_allowed / approx_char_width))
 
     if sub_mode == "my_en":
         if my_text:
@@ -394,7 +399,7 @@ def render_composite_subtitle_frame(
             for wl in wrapped:
                 lines_to_render.append((wl, mm_font, eff_font_size, main_color, eff_outline))
         if en_text:
-            wrapped_en = wrap_burmese_text(en_text, max_chars=int(max_char_per_line * 1.25))
+            wrapped_en = wrap_burmese_text(en_text, max_chars=int(max_char_per_line * 1.5))
             for we in wrapped_en:
                 lines_to_render.append((we, sec_font, en_font_size, secondary_color, max(1, eff_outline - 1)))
     elif sub_mode == "my_zh":
@@ -407,7 +412,7 @@ def render_composite_subtitle_frame(
     elif sub_mode == "en":
         t = en_text or my_text
         if t:
-            wrapped = wrap_burmese_text(t, max_chars=max_char_per_line)
+            wrapped = wrap_burmese_text(t, max_chars=int(max_char_per_line * 1.5))
             for wl in wrapped:
                 lines_to_render.append((wl, sec_font, eff_font_size, main_color, eff_outline))
     else:

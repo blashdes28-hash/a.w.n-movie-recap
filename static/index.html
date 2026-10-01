@@ -1045,14 +1045,7 @@
                     <div>
                       <label class="text-slate-400 block mb-0.5">Size & အရောင်:</label>
                       <div class="flex items-center gap-1">
-                        <select id="transcribe-font-size" onchange="Tools.onStyleChange()" class="act-select text-[10px] py-1 px-1 bg-slate-900 border-slate-700 text-slate-200 flex-1">
-                          <option value="20">20px</option>
-                          <option value="24">24px</option>
-                          <option value="28">28px</option>
-                          <option value="34" selected>34px</option>
-                          <option value="42">42px</option>
-                          <option value="50">50px</option>
-                        </select>
+                        <input type="number" id="transcribe-font-size" value="34" min="10" max="100" onchange="Tools.onStyleChange()" class="act-select text-[10px] py-1 px-2 bg-slate-900 border-slate-700 text-slate-200 flex-1">
                         <input id="transcribe-sub-color" type="color" value="#ffffff" onchange="Tools.onStyleChange()" class="w-6 h-6 rounded border border-slate-700 bg-slate-800 cursor-pointer p-0.5">
                       </div>
                     </div>
@@ -1486,6 +1479,11 @@
                 document.getElementById('google-user-info').classList.remove('hidden');
                 document.getElementById('google-user-email').textContent = 'Signed in as: ' + email;
                 window.currentUserEmail = email;
+                
+                // Save for license binding
+                localStorage.setItem('awn_google_email', email);
+                localStorage.setItem('awn_google_name', data.name || '');
+                if (window.LicenseManager) window.LicenseManager.verifyWithGoogleAuth();
                 
                 // Load key from localStorage if exists
                 const savedKey = localStorage.getItem('gemini_key_' + email);
