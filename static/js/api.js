@@ -190,7 +190,7 @@ const API = {
     return await res.json();
   },
 
-  transcribeVideo(file, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
+  async transcribeVideo(file, sourceLang = 'zh', whisperModel = 'base', geminiApiKey = '') {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('source_lang', sourceLang);
